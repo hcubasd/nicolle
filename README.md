@@ -17,7 +17,7 @@ npm run build    # TypeScript check + static output in dist/
 npm run preview  # Preview the static build on port 4173
 ```
 
-Relative asset URLs and hash routes support deployment at `https://hcubasd.github.io/nicolle/` without server-side routing. GitHub Actions deployment is planned as a separate step. This repository contains the current site source; `npm run build` generates the static files.
+Relative asset URLs and hash routes support deployment at `https://hcubasd.github.io/nicolle/` without server-side routing. The `.github/workflows/pages.yml` workflow tests, builds and deploys every push to `main`, and can also be run manually. GitHub Pages uses the GitHub Actions source. Live site: https://hcubasd.github.io/nicolle/. `npm run build` generates the static files in `dist/`.
 
 ## Pages
 
