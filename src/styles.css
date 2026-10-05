@@ -1,0 +1,218 @@
+*, *::before, *::after { box-sizing: border-box; }
+:root {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-synthesis: none;
+  color: #000;
+  background: var(--fallback-background, #b2bade);
+  --glass-radius: 48px;
+}
+body { margin: 0; min-width: 280px; }
+a { color: inherit; }
+button { font: inherit; color: inherit; }
+#background { position: fixed; inset: 0; width: 100%; height: 100%; display: block; pointer-events: none; z-index: -1; }
+.glass { background: transparent; border: 0; border-radius: var(--glass-radius); }
+a:focus-visible, button:focus-visible { outline: 2px solid currentColor; outline-offset: 5px; }
+a { -webkit-tap-highlight-color: transparent; }
+.topbar {
+  --glass-radius: 28px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  width: min(calc(100% - 64px), 1120px);
+  min-height: 76px;
+  margin: 28px auto 0;
+  padding: 20px 36px;
+}
+.brand { text-decoration: none; font-size: 22px; font-weight: 650; letter-spacing: -.7px; }
+.brand-dot { font-weight: 400; }
+.topnav { display: flex; align-items: center; gap: 24px; margin-left: 12px; font-size: 14px; }
+.topnav a { text-decoration: none; text-underline-offset: 5px; }
+.topnav a:hover, .topnav a[aria-current] { text-decoration: underline; }
+.today { margin-left: auto; font-size: 13px; white-space: nowrap; }
+.page { width: min(calc(100% - 64px), 1120px); margin: 44px auto 40px; }
+.page-heading { margin: 0 12px 28px; }
+.eyebrow { font-size: 11px; letter-spacing: 1.5px; font-weight: 600; text-transform: uppercase; margin: 0 0 10px; }
+h1 { margin: 0 0 10px; font-size: clamp(28px, 4vw, 40px); font-weight: 550; letter-spacing: -1.2px; line-height: 1.18; }
+h1:focus { outline: none; }
+.subtitle, .grading { font-size: 14px; line-height: 1.65; margin: 0; }
+.grading { margin-top: 7px; font-size: 12px; }
+.courses { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 32px; width: 100%; margin: 0; padding: 0; list-style: none; }
+.course { display: flex; align-items: center; gap: 14px; width: 100%; min-height: 132px; padding: 28px 58px; font-size: 18px; line-height: 1.4; text-align: left; text-decoration: none; border-radius: 999px; }
+a.course { cursor: pointer; }
+button.course { cursor: default; }
+.course-copy { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
+.course-name { overflow-wrap: break-word; text-wrap: balance; }
+.course-meta { font-size: 11px; line-height: 1.5; }
+.menu-arrow { flex-shrink: 0; margin-left: auto; font-size: 23px; font-weight: 400; }
+a:hover .menu-arrow { transform: translate(2px, -2px); }
+.footnote { font-size: 12px; margin: 24px 12px 0; line-height: 1.6; }
+.roadmap-page { max-width: 900px; }
+.roadmap-menu { --glass-radius: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px 20px; padding: 18px 28px; margin-bottom: 28px; }
+.filter-group { display: flex; flex-wrap: wrap; align-items: center; gap: 7px 16px; }
+.filter-button { border: 0; background: transparent; padding: 7px 0; min-height: 36px; font-size: 12px; cursor: pointer; text-underline-offset: 6px; }
+.filter-button[aria-pressed="true"] { font-weight: 650; text-decoration: underline; }
+.filter-button:hover { text-decoration: underline; }
+.month-label { margin: 28px 14px 13px; font-size: 11px; font-weight: 650; letter-spacing: 1.4px; text-transform: uppercase; }
+.events { display: grid; gap: 18px; margin: 0; padding: 0; list-style: none; }
+.event-card { --glass-radius: 32px; display: flex; align-items: center; gap: 24px; min-height: 116px; padding: 26px 40px; text-decoration: none; }
+.date-badge { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 0 0 58px; }
+.date-badge > span { font-size: 28px; line-height: 1.1; letter-spacing: -1px; }
+.date-badge small { font-size: 11px; margin-top: 4px; text-transform: uppercase; letter-spacing: .8px; }
+.undated small { font-size: 9px; letter-spacing: .3px; }
+.event-copy { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.event-kind { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; font-weight: 600; }
+.event-title { font-size: 17px; line-height: 1.4; overflow-wrap: break-word; }
+.event-meta { font-size: 11px; line-height: 1.5; }
+.course-footer { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin: 26px 12px; font-size: 11px; line-height: 1.6; }
+.empty { --glass-radius: 28px; padding: 40px; font-size: 14px; line-height: 1.7; }
+.detail-page { max-width: 900px; }
+.back-link { display: inline-block; margin: 0 12px 22px; font-size: 13px; text-decoration: none; }
+.back-link:hover { text-decoration: underline; text-underline-offset: 5px; }
+.detail-panel { --glass-radius: 36px; padding: 46px 52px; }
+.detail-heading { margin-bottom: 32px; }
+.detail-heading h1 { font-size: clamp(27px, 4vw, 35px); line-height: 1.22; }
+.detail-date { font-size: 13px; margin: 14px 0 0; line-height: 1.65; }
+.detail-section { margin: 28px 0; }
+.detail-section h2 { font-size: 15px; font-weight: 650; margin: 0 0 12px; }
+.detail-section p, .topic-list, .development-steps { font-size: 14px; line-height: 1.8; }
+.topic-list, .development-steps { margin: 0; padding-left: 19px; }
+.topic-list li, .development-steps li { padding-left: 4px; margin: 8px 0; }
+.detail-note { font-size: 12px !important; }
+.material-list { padding: 0; margin: 0; list-style: none; }
+.material-list li { margin: 15px 0; font-size: 13px; line-height: 1.7; }
+.material-list small { display: block; font-size: 11px; }
+.related-link { display: inline-block; margin-top: 12px; font-size: 13px; }
+.detail-source { font-size: 11px; line-height: 1.7; margin-top: 34px; }
+.no-webgl .glass { border: 1px solid currentColor; }
+@media (max-width: 760px) {
+  :root { --glass-radius: 42px; }
+  .topbar { width: calc(100% - 32px); margin-top: 16px; padding: 20px 25px; gap: 12px; flex-wrap: wrap; --glass-radius: 24px; }
+  .brand { font-size: 20px; }
+  .topnav { order: 3; width: 100%; margin: 0; gap: 18px; font-size: 12px; }
+  .today { font-size: 11px; }
+  .page { width: calc(100% - 32px); margin-top: 32px; }
+  .page-heading { margin: 0 8px 24px; }
+  .eyebrow { font-size: 10px; }
+  .subtitle { font-size: 12px; }
+  .teacher { display: block; }
+  .desktop-separator { display: none; }
+  .courses { grid-template-columns: minmax(0, 1fr); gap: 22px; }
+  .course { min-height: 126px; padding: 26px 48px; font-size: 16px; gap: 10px; }
+  .course-meta { font-size: 10px; }
+  .footnote { margin-inline: 8px; font-size: 11px; }
+  .roadmap-menu { padding: 16px 24px; --glass-radius: 22px; gap: 4px; }
+  .filter-group { gap: 16px; width: 100%; }
+  .filter-button { font-size: 11px; min-height: 40px; }
+  .event-card { --glass-radius: 26px; min-height: 120px; padding: 26px 28px; gap: 15px; }
+  .date-badge { flex-basis: 38px; }
+  .date-badge > span { font-size: 24px; }
+  .event-title { font-size: 15px; }
+  .event-meta { font-size: 10px; }
+  .event-kind { font-size: 9px; }
+  .menu-arrow { font-size: 19px; }
+  .month-label { margin-inline: 8px; }
+  .course-footer { margin-inline: 8px; }
+  .detail-panel { --glass-radius: 26px; padding: 32px; }
+  .detail-section p, .topic-list, .development-steps { font-size: 13px; }
+  .detail-heading { margin-bottom: 24px; }
+}
+@media (max-width: 340px) {
+  .topbar { padding-inline: 22px; }
+  .course { padding-inline: 39px; font-size: 15px; }
+  .event-card { padding: 25px; gap: 11px; }
+  .event-card .menu-arrow { display: none; }
+  .detail-panel { padding: 30px; }
+  .filter-group { gap: 12px; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .menu-arrow { transition: transform 160ms ease; }
+}
+/* Game and notebook: glass remains part of the shared WebGL scene. */
+.game-page { max-width: 1000px; }
+.game-toolbar, .game-feedback, .lesson-panel { --glass-radius: 28px; padding: 28px 34px; margin-bottom: 24px; }
+.game-toolbar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+.game-toolbar label { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+.game-toolbar select { max-width: 100%; font: inherit; color: inherit; background: transparent; border: 1px solid currentColor; border-radius: 14px; padding: 10px; }
+.game-toolbar button, .game-actions button, .lesson-panel button { background: transparent; border: 0; padding: 9px 0; cursor: pointer; font: inherit; font-size: 13px; text-underline-offset: 5px; }
+button[aria-pressed="true"] { font-weight: 650; }
+.game-toolbar button[aria-pressed="true"], .game-actions button:hover, .lesson-panel button:hover { text-decoration: underline; }
+button:disabled { cursor: default; opacity: .65; }
+.island-board { width: 100%; position: relative; aspect-ratio: 800/560; margin: 16px 0; }
+.island-board svg { position: absolute; width: 100%; height: 100%; overflow: visible; }
+.bridge { fill: none; stroke: #000; stroke-width: 1.5; stroke-dasharray: 6 7; }
+.bridge.built { stroke-width: 4; stroke-dasharray: none; }
+.bridge.rejected { stroke-width: 3; stroke-dasharray: 2 4; }
+.island-position { position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; width: 100px; font-size: 12px; }
+.island { --glass-radius: 43px; width: 86px; height: 86px; display: flex; align-items: center; justify-content: center; position: relative; }
+.island strong { position: absolute; right: 14px; bottom: 10px; font-size: 12px; }
+.animal { --animal-frame: 48px; display: block; width: var(--animal-frame); height: var(--animal-frame); background-size: calc(4 * var(--animal-frame)) calc(4 * var(--animal-frame)); background-position: 0 0; background-repeat: no-repeat; image-rendering: pixelated; }
+.island-name { margin-top: 3px; font-weight: 600; }
+.island-position small { font-size: 10px; }
+.cost-button { --glass-radius: 18px; width: 36px; height: 36px; position: absolute; transform: translate(-50%,-50%); cursor: pointer; font-size: 14px; }
+.cost-button[aria-pressed="true"] { outline: 2px solid currentColor; outline-offset: 1px; }
+.cost-button:disabled { opacity: 1; }
+.network-stats { display: flex; gap: 18px; flex-wrap: wrap; font-size: 13px; }
+.network-stats strong { font-size: 20px; }
+.game-feedback p { font-size: 14px; line-height: 1.7; min-height: 48px; }
+.game-actions { display: flex; gap: 12px 26px; align-items: center; flex-wrap: wrap; font-size: 12px; }
+.edge-list { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 6px 22px; margin: 16px 0; }
+.edge-list button { text-align: left; border-bottom: 1px solid currentColor; }
+.edge-list small { display: block; font-size: 10px; margin-top: 3px; }
+.lesson-page { max-width: 900px; }
+.lesson-panel h2 { margin: 0 0 14px; font-size: 21px; font-weight: 550; letter-spacing: -.3px; }
+.lesson-panel p, .lesson-panel li { font-size: 14px; line-height: 1.85; }
+.lesson-panel summary { cursor: pointer; font-size: 14px; line-height: 1.6; }
+.lesson-index { display: grid; gap: 9px; margin: 20px 0 0; font-size: 13px; }
+.lesson-step-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; }
+.lesson-step-heading label { font-size: 12px; white-space: nowrap; }
+.lesson-step-heading input { accent-color: #000; }
+.code-caption { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 11px; margin-top: 18px; }
+.python-code { background: #000; color: var(--ansi-bright-cyan); border-radius: 16px; padding: 22px; overflow-x: auto; margin: 6px 0 20px; font-size: 14px; line-height: 1.85; tab-size: 4; }
+.python-code code { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+.hljs-keyword { color: var(--ansi-bright-red); }
+.hljs-string { color: var(--ansi-bright-green); }
+.hljs-number { color: var(--ansi-bright-magenta); }
+.hljs-comment { color: var(--ansi-cyan); }
+.hljs-title { color: var(--ansi-bright-yellow); }
+.hljs-built_in { color: var(--ansi-bright-blue); }
+.hljs-literal { color: var(--ansi-magenta); }
+.hljs-params { color: var(--ansi-yellow); }
+.hljs-meta { color: var(--ansi-red); }
+.hljs-subst { color: var(--ansi-green); }
+.hljs-attr { color: var(--ansi-blue); }
+.expected-output { background: transparent; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; line-height: 1.8; margin: 8px 0 20px; }
+.output-label { font-size: 11px !important; font-weight: 650; margin-bottom: 0; }
+@media(max-width:760px) {
+ .game-toolbar, .game-feedback, .lesson-panel { padding: 24px; --glass-radius: 24px; }
+ .game-toolbar { display: block; }
+ .game-toolbar .filter-group { margin-top: 12px; }
+ .game-toolbar label { flex-wrap: wrap; }
+ .island { --glass-radius: 29px; width: 58px; height: 58px; }
+ .island-position { width: 66px; font-size: 10px; }
+ .island strong { right: 5px; bottom: 4px; font-size: 10px; }
+ .animal { --animal-frame: 40px; }
+ .island-position small { font-size: 9px; }
+ .cost-button { --glass-radius: 14px; width: 28px; height: 28px; font-size: 11px; }
+ .edge-list { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 6px 16px; }
+ .lesson-panel h2 { font-size: 19px; }
+ .lesson-panel p, .lesson-panel li { font-size: 13px; }
+ .python-code { padding: 16px; font-size: 13px; margin-inline: -8px; }
+ .lesson-step-heading { flex-wrap: wrap; gap: 0; }
+ .network-stats { gap: 12px; font-size: 11px; }
+ .network-stats strong { font-size: 17px; }
+}
+
+/* All six sheets have four front-facing frames in their first row.
+   Discrete steps preserve the supplied pixel art; the sprite stays on its island. */
+@keyframes animal-walk {
+  from { background-position: 0 0; }
+  to { background-position: calc(-4 * var(--animal-frame)) 0; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .animal { animation: animal-walk .8s steps(4, end) infinite; }
+  .animal[data-animal="coelho"] { animation-duration: .96s; animation-delay: -.24s; }
+  .animal[data-animal="gato"] { animation-delay: -.4s; }
+  .animal[data-animal="sapo"] { animation-duration: 1.12s; animation-delay: -.56s; }
+  .animal[data-animal="ovelha"] { animation-duration: 1s; animation-delay: -.75s; }
+  .animal[data-animal="galinha"] { animation-duration: .72s; animation-delay: -.18s; }
+}

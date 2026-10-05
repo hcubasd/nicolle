@@ -1,0 +1,107 @@
+// Adapted from hcubasd/nicrainha docs/noise.js; MIT, see LICENSES/nicrainha.txt.
+// CPU side of the background noise. The shader (shaders/scene.frag) evaluates
+// the same 3D Perlin noise per pixel; this copy exists only to measure the
+// field's range each frame. Both read the same permutation table, so their
+// values agree.
+
+// Seeded Fisher–Yates shuffle of 0..255 (classic LCG, as in miniature-waffle).
+export function buildPermutation(seed: number): Uint8Array {
+  const perm = new Uint8Array(256);
+  for (let i = 0; i < 256; i++) perm[i] = i;
+  let s = seed;
+  const rnd = () => { s = (s * 9301 + 49297) % 233280; return s / 233280; };
+  for (let i = 255; i > 0; i--) {
+    const j = Math.floor(rnd() * (i + 1));
+    const tmp = perm[i]; perm[i] = perm[j]; perm[j] = tmp;
+  }
+  return perm;
+}
+
+const fade = (t: number) => t * t * t * (t * (t * 6 - 15) + 10);
+const lerp = (a: number, b: number, t: number) => a + t * (b - a);
+
+function grad(hash: number, x: number, y: number, z: number) {
+  const h = hash & 15;
+  const u = h < 8 ? x : y;
+  const v = h < 4 ? y : (h === 12 || h === 14) ? x : z;
+  return ((h & 1) ? -u : u) + ((h & 2) ? -v : v);
+}
+
+// Ken Perlin's improved noise (2002). Periodic with period 256 on every axis.
+export function perlin3(perm: Uint8Array, x: number, y: number, z: number): number {
+  const P = (i: number) => perm[i & 255];
+  const X = Math.floor(x), Y = Math.floor(y), Z = Math.floor(z);
+  x -= X; y -= Y; z -= Z;
+  const u = fade(x), v = fade(y), w = fade(z);
+  const A = P(X) + Y, AA = P(A) + Z, AB = P(A + 1) + Z;
+  const B = P(X + 1) + Y, BA = P(B) + Z, BB = P(B + 1) + Z;
+  return lerp(
+    lerp(
+      lerp(grad(P(AA), x, y, z), grad(P(BA), x - 1, y, z), u),
+      lerp(grad(P(AB), x, y - 1, z), grad(P(BB), x - 1, y - 1, z), u),
+      v,
+    ),
+    lerp(
+      lerp(grad(P(AA + 1), x, y, z - 1), grad(P(BA + 1), x - 1, y, z - 1), u),
+      lerp(grad(P(AB + 1), x, y - 1, z - 1), grad(P(BB + 1), x - 1, y - 1, z - 1), u),
+      v,
+    ),
+    w,
+  );
+}
+
+// Exact min and range of the 2:1 background field (x in [0,2], y in [0,1])
+// at depth z. The shader stretches this range over the whole palette, as
+// miniature-waffle's static version did per image.
+//
+// A coarse grid locates every local extremum; each is then followed to its
+// true peak or valley by a compass search with halving steps, kept inside the
+// field. The result is the continuous field's own min and max, not a sample.
+const CELLS = 32;  // grid points per lattice unit
+
+export function fieldRange(perm: Uint8Array, z: number): { min: number; range: number } {
+  const cols = 2 * CELLS + 1, rows = CELLS + 1;
+  const grid = new Float64Array(cols * rows);
+  for (let j = 0; j < rows; j++) {
+    for (let i = 0; i < cols; i++) grid[j * cols + i] = perlin3(perm, i / CELLS, j / CELLS, z);
+  }
+
+  let min = Infinity, max = -Infinity;
+  for (let j = 0; j < rows; j++) {
+    for (let i = 0; i < cols; i++) {
+      const v = grid[j * cols + i];
+      let isMax = true, isMin = true;
+      for (let dj = -1; dj <= 1; dj++) {
+        for (let di = -1; di <= 1; di++) {
+          const ni = i + di, nj = j + dj;
+          if ((di || dj) && ni >= 0 && ni < cols && nj >= 0 && nj < rows) {
+            const w = grid[nj * cols + ni];
+            if (w > v) isMax = false;
+            if (w < v) isMin = false;
+          }
+        }
+      }
+      if (isMax) max = Math.max(max, climb(perm, z, i / CELLS, j / CELLS, 1));
+      if (isMin) min = Math.min(min, -climb(perm, z, i / CELLS, j / CELLS, -1));
+    }
+  }
+  return { min, range: max - min || 1 };
+}
+
+// Highest value of sign · noise reachable uphill from (x, y) within the field.
+function climb(perm: Uint8Array, z: number, x: number, y: number, sign: number) {
+  const f = (px: number, py: number) => sign * perlin3(perm, px, py, z);
+  const clampX = (v: number) => Math.min(Math.max(v, 0), 2);
+  const clampY = (v: number) => Math.min(Math.max(v, 0), 1);
+  let best = f(x, y);
+  for (let step = 1 / CELLS; step > 1e-7; ) {
+    let moved = false;
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const nx = clampX(x + dx * step), ny = clampY(y + dy * step);
+      const v = f(nx, ny);
+      if (v > best) { best = v; x = nx; y = ny; moved = true; }
+    }
+    if (!moved) step /= 2;
+  }
+  return best;
+}
