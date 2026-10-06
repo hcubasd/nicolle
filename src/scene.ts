@@ -1,6 +1,5 @@
 import { generatePalettes } from 'nicrainha';
 import { buildPermutation, fieldRange } from './noise';
-import { ScrollLiquid, liquidShape } from './liquid';
 import fragmentSource from './shaders/scene.frag?raw';
 import vertexSource from './shaders/fullscreen.vert?raw';
 
@@ -19,10 +18,6 @@ const startedAt = performance.now();
 let animationFrame = 0;
 let disposed = false;
 let geometryDirty = true;
-const liquid = new ScrollLiquid(window.scrollY, performance.now());
-let lastMotion = 0;
-const resetLiquid = () => { liquid.reset(window.scrollY, performance.now()); geometryDirty = true; };
-window.addEventListener('hashchange', resetLiquid);
 
 function knob(name: string, fallback: number): number {
   if (!params.has(name)) return fallback;
@@ -117,10 +112,7 @@ function startRenderer(): void {
   geometryDirty = true;
   document.documentElement.classList.remove('no-webgl');
 
-  function layout(now: number): void {
-    const motion = liquid.update(window.scrollY, now, reducedMotion.matches || params.get('liquid') === '0');
-    if (motion !== lastMotion) geometryDirty = true;
-    lastMotion = motion;
+  function layout(): void {
     const bounds = canvas.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
     const width = Math.max(1, Math.round(bounds.width * dpr));
@@ -132,7 +124,7 @@ function startRenderer(): void {
       gl!.uniform2f(locations.resolution, width, height);
       geometryDirty = true;
     }
-    // Include document scroll height: filtering the list may clamp scrollY
+    // Track scroll position: filtering the list may clamp scrollY
     // without a separate scroll event before the next frame.
     const signature = `${window.scrollX},${window.scrollY},${dpr},${bounds.width},${bounds.height}`;
     if (signature !== layoutSignature) geometryDirty = true;
@@ -152,14 +144,13 @@ function startRenderer(): void {
     visible.forEach(({ element, rect }, i) => {
       const defaultRadius = parseFloat(getComputedStyle(element).getPropertyValue('--glass-radius'));
       const baseRadius = Math.min(knob('radius', defaultRadius), rect.width / 2, rect.height / 2);
-      const shape = liquidShape(rect, baseRadius, motion);
       panels.set([
         (rect.left - bounds.left + rect.width / 2) * dpr,
         (rect.top - bounds.top + rect.height / 2) * dpr,
-        shape.halfWidth * dpr,
-        shape.halfHeight * dpr,
+        rect.width / 2 * dpr,
+        rect.height / 2 * dpr,
       ], i * 4);
-      radii[i] = shape.radius * dpr;
+      radii[i] = baseRadius * dpr;
     });
     gl!.uniform1i(locations.panelCount, visible.length);
     gl!.uniform4fv(locations.panels, panels);
@@ -170,7 +161,7 @@ function startRenderer(): void {
   function frame(now: number): void {
     if (disposed || gl!.isContextLost()) return;
     if (!document.hidden) {
-      layout(now);
+      layout();
       // The same 0.1 lattice units/second as the nicrainha showcase. Motion
       // preference freezes the field, while scrolling and resizing still work.
       const z = reducedMotion.matches ? 0 : (((now - startedAt) / 1000) * 0.1 * speed) % 256;
@@ -204,7 +195,6 @@ if (import.meta.hot) {
     cancelAnimationFrame(animationFrame);
     resizeObserver.disconnect();
     mutationObserver.disconnect();
-    window.removeEventListener('hashchange', resetLiquid);
     window.removeEventListener('resize', onLayout);
     window.removeEventListener('scroll', onLayout);
     window.visualViewport?.removeEventListener('resize', onLayout);

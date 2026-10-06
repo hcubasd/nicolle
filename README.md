@@ -36,8 +36,8 @@ The course includes all **18 dated events from the teaching plan**, plus the Kru
 - The renderer discovers DOM elements marked `data-glass`, reads their CSS radius and updates the positions on scroll, resize or page changes. Off-screen panels are culled. Capacity is 32 simultaneously visible panels.
 - In-page navigation preserves the same palette, permutation and animation clock. The glass model retains refractive index 1.5 and air gap `(1/(n−1)−1/n) × radius`. Color is an exact palette lookup, without blur, tint or alpha blending.
 - `?speed=0.5` adjusts animation speed; `?speed=0` freezes it. `?radius=0` hides the glass for comparison. Put query parameters before the hash route.
-- Scroll-driven liquid glass contracts inward on both axes and strongly softens its corners, independently of the DOM text. Every animated silhouette stays inside its original bounds; no neighbor-gap calculations are needed. Insets reach up to 18 CSS pixels horizontally and 26 vertically, scaled to the panel size and scroll response; after scrolling stops, deformation returns exactly to zero within 420 ms of the last detected movement. `?liquid=0` disables this effect for comparison.
-- Reduced-motion preference disables glass deformation and freezes the field. Without WebGL2, a nicrainha palette color and outlined panels keep all navigation/content available. Context loss/restoration is handled.
+- Glass panels retain their DOM dimensions and CSS corner radius during scrolling. Their positions are updated in the shared WebGL scene; the HTML text remains on a separate browser layer, so brief scroll misalignment can still occur on mobile.
+- Reduced-motion preference freezes the animated background field. Without WebGL2, a nicrainha palette color and outlined panels keep all navigation/content available. Context loss/restoration is handled.
 - System fonts; no tracking, external image assets or backend. Current date is the device's local calendar date and updates while the page is open.
 
 ## Source
