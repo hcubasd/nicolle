@@ -10,6 +10,27 @@ body { margin: 0; min-width: 280px; }
 a { color: inherit; }
 button { font: inherit; color: inherit; }
 #background { position: fixed; inset: 0; width: 100%; height: 100%; display: block; pointer-events: none; z-index: -1; }
+/* Opaque safe-area strips keep DOM text and WebGL out of screen-edge regions.
+   Browser-owned toolbars receive the same color through theme-color. */
+#app {
+  padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px)
+    env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+}
+#background {
+  clip-path: inset(env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px)
+    env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px));
+}
+body::before, body::after {
+  content: "";
+  position: fixed;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: var(--fallback-background, #b2bade);
+}
+body::before { top: 0; height: env(safe-area-inset-top, 0px); }
+body::after { bottom: 0; height: env(safe-area-inset-bottom, 0px); }
+
 .glass { background: transparent; border: 0; border-radius: var(--glass-radius); }
 a:focus-visible, button:focus-visible { outline: 2px solid currentColor; outline-offset: 5px; }
 a { -webkit-tap-highlight-color: transparent; }

@@ -1,4 +1,4 @@
-import { generatePalettes } from 'nicrainha';
+import { DEFAULT_LIGHTNESS, generatePalettes } from 'nicrainha';
 import { buildPermutation, fieldRange } from './noise';
 import fragmentSource from './shaders/scene.frag?raw';
 import vertexSource from './shaders/fullscreen.vert?raw';
@@ -11,7 +11,7 @@ const MAX_PANELS = 32;
 let glassElements: HTMLElement[] = [];
 let layoutSignature = '';
 const params = new URLSearchParams(location.search);
-const palette = generatePalettes(256)[Math.floor(Math.random() * 256)];
+const palette = generatePalettes(256, { lightness: DEFAULT_LIGHTNESS })[Math.floor(Math.random() * 256)];
 const permutation = buildPermutation(Math.floor(Math.random() * 99999));
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
 const startedAt = performance.now();
