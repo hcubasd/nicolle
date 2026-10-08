@@ -1,10 +1,10 @@
 *, *::before, *::after { box-sizing: border-box; }
 :root {
+  --glass-radius: 28px;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-synthesis: none;
   color: #000;
   background: var(--fallback-background, #b2bade);
-  --glass-radius: 48px;
 }
 body { margin: 0; min-width: 280px; }
 a { color: inherit; }
@@ -31,11 +31,10 @@ body::before, body::after {
 body::before { top: 0; height: env(safe-area-inset-top, 0px); }
 body::after { bottom: 0; height: env(safe-area-inset-bottom, 0px); }
 
-.glass { background: transparent; border: 0; border-radius: var(--glass-radius); }
+.glass { background: transparent; border: 0; border-radius: var(--glass-render-radius, var(--glass-radius)); }
 a:focus-visible, button:focus-visible { outline: 2px solid currentColor; outline-offset: 5px; }
 a { -webkit-tap-highlight-color: transparent; }
 .topbar {
-  --glass-radius: 28px;
   display: flex;
   align-items: center;
   gap: 24px;
@@ -58,7 +57,7 @@ h1:focus { outline: none; }
 .subtitle, .grading { font-size: 14px; line-height: 1.65; margin: 0; }
 .grading { margin-top: 7px; font-size: 12px; }
 .courses { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 32px; width: 100%; margin: 0; padding: 0; list-style: none; }
-.course { display: flex; align-items: center; gap: 14px; width: 100%; min-height: 132px; padding: 28px 58px; font-size: 18px; line-height: 1.4; text-align: left; text-decoration: none; border-radius: 999px; }
+.course { display: flex; align-items: center; gap: 14px; width: 100%; min-height: 132px; padding: 28px 58px; font-size: 18px; line-height: 1.4; text-align: left; text-decoration: none; border-radius: var(--glass-render-radius, var(--glass-radius)); }
 a.course { cursor: pointer; }
 button.course { cursor: default; }
 .course-copy { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
@@ -68,14 +67,14 @@ button.course { cursor: default; }
 a:hover .menu-arrow { transform: translate(2px, -2px); }
 .footnote { font-size: 12px; margin: 24px 12px 0; line-height: 1.6; }
 .roadmap-page { max-width: 900px; }
-.roadmap-menu { --glass-radius: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px 20px; padding: 18px 28px; margin-bottom: 28px; }
+.roadmap-menu { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px 20px; padding: 18px 28px; margin-bottom: 28px; }
 .filter-group { display: flex; flex-wrap: wrap; align-items: center; gap: 7px 16px; }
 .filter-button { border: 0; background: transparent; padding: 7px 0; min-height: 36px; font-size: 12px; cursor: pointer; text-underline-offset: 6px; }
 .filter-button[aria-pressed="true"] { font-weight: 650; text-decoration: underline; }
 .filter-button:hover { text-decoration: underline; }
 .month-label { margin: 28px 14px 13px; font-size: 11px; font-weight: 650; letter-spacing: 1.4px; text-transform: uppercase; }
 .events { display: grid; gap: 18px; margin: 0; padding: 0; list-style: none; }
-.event-card { --glass-radius: 32px; display: flex; align-items: center; gap: 24px; min-height: 116px; padding: 26px 40px; text-decoration: none; }
+.event-card { display: flex; align-items: center; gap: 24px; min-height: 116px; padding: 26px 40px; text-decoration: none; }
 .date-badge { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 0 0 58px; }
 .date-badge > span { font-size: 28px; line-height: 1.1; letter-spacing: -1px; }
 .date-badge small { font-size: 11px; margin-top: 4px; text-transform: uppercase; letter-spacing: .8px; }
@@ -85,11 +84,11 @@ a:hover .menu-arrow { transform: translate(2px, -2px); }
 .event-title { font-size: 17px; line-height: 1.4; overflow-wrap: break-word; }
 .event-meta { font-size: 11px; line-height: 1.5; }
 .course-footer { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin: 26px 12px; font-size: 11px; line-height: 1.6; }
-.empty { --glass-radius: 28px; padding: 40px; font-size: 14px; line-height: 1.7; }
+.empty { padding: 40px; font-size: 14px; line-height: 1.7; }
 .detail-page { max-width: 900px; }
 .back-link { display: inline-block; margin: 0 12px 22px; font-size: 13px; text-decoration: none; }
 .back-link:hover { text-decoration: underline; text-underline-offset: 5px; }
-.detail-panel { --glass-radius: 36px; padding: 46px 52px; }
+.detail-panel { padding: 46px 52px; }
 .detail-heading { margin-bottom: 32px; }
 .detail-heading h1 { font-size: clamp(27px, 4vw, 35px); line-height: 1.22; }
 .detail-date { font-size: 13px; margin: 14px 0 0; line-height: 1.65; }
@@ -106,8 +105,8 @@ a:hover .menu-arrow { transform: translate(2px, -2px); }
 .detail-source { font-size: 11px; line-height: 1.7; margin-top: 34px; }
 .no-webgl .glass { border: 1px solid currentColor; }
 @media (max-width: 760px) {
-  :root { --glass-radius: 42px; }
-  .topbar { width: calc(100% - 32px); margin-top: 16px; padding: 20px 25px; gap: 12px; flex-wrap: wrap; --glass-radius: 24px; }
+  :root { }
+  .topbar { width: calc(100% - 32px); margin-top: 16px; padding: 20px 25px; gap: 12px; flex-wrap: wrap; }
   .brand { font-size: 20px; }
   .topnav { order: 3; width: 100%; margin: 0; gap: 18px; font-size: 12px; }
   .today { font-size: 11px; }
@@ -121,10 +120,10 @@ a:hover .menu-arrow { transform: translate(2px, -2px); }
   .course { min-height: 126px; padding: 26px 48px; font-size: 16px; gap: 10px; }
   .course-meta { font-size: 10px; }
   .footnote { margin-inline: 8px; font-size: 11px; }
-  .roadmap-menu { padding: 16px 24px; --glass-radius: 22px; gap: 4px; }
+  .roadmap-menu { padding: 16px 24px; gap: 4px; }
   .filter-group { gap: 16px; width: 100%; }
   .filter-button { font-size: 11px; min-height: 40px; }
-  .event-card { --glass-radius: 26px; min-height: 120px; padding: 26px 28px; gap: 15px; }
+  .event-card { min-height: 120px; padding: 26px 28px; gap: 15px; }
   .date-badge { flex-basis: 38px; }
   .date-badge > span { font-size: 24px; }
   .event-title { font-size: 15px; }
@@ -133,7 +132,7 @@ a:hover .menu-arrow { transform: translate(2px, -2px); }
   .menu-arrow { font-size: 19px; }
   .month-label { margin-inline: 8px; }
   .course-footer { margin-inline: 8px; }
-  .detail-panel { --glass-radius: 26px; padding: 32px; }
+  .detail-panel { padding: 32px; }
   .detail-section p, .topic-list, .development-steps { font-size: 13px; }
   .detail-heading { margin-bottom: 24px; }
 }
@@ -150,7 +149,7 @@ a:hover .menu-arrow { transform: translate(2px, -2px); }
 }
 /* Game and notebook: glass remains part of the shared WebGL scene. */
 .game-page { max-width: 1000px; }
-.game-toolbar, .game-feedback, .lesson-panel { --glass-radius: 28px; padding: 28px 34px; margin-bottom: 24px; }
+.game-toolbar, .game-feedback, .lesson-panel { padding: 28px 34px; margin-bottom: 24px; }
 .game-toolbar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
 .game-toolbar label { display: flex; align-items: center; gap: 10px; font-size: 13px; }
 .game-toolbar select { max-width: 100%; font: inherit; color: inherit; background: transparent; border: 1px solid currentColor; border-radius: 14px; padding: 10px; }
@@ -164,12 +163,12 @@ button:disabled { cursor: default; opacity: .65; }
 .bridge.built { stroke-width: 4; stroke-dasharray: none; }
 .bridge.rejected { stroke-width: 3; stroke-dasharray: 2 4; }
 .island-position { position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; width: 100px; font-size: 12px; }
-.island { --glass-radius: 43px; width: 86px; height: 86px; display: flex; align-items: center; justify-content: center; position: relative; }
+.island { width: 86px; height: 86px; display: flex; align-items: center; justify-content: center; position: relative; }
 .island strong { position: absolute; right: 14px; bottom: 10px; font-size: 12px; }
 .animal { --animal-frame: 48px; display: block; width: var(--animal-frame); height: var(--animal-frame); background-size: calc(4 * var(--animal-frame)) calc(4 * var(--animal-frame)); background-position: 0 0; background-repeat: no-repeat; image-rendering: pixelated; }
 .island-name { margin-top: 3px; font-weight: 600; }
 .island-position small { font-size: 10px; }
-.cost-button { --glass-radius: 18px; width: 36px; height: 36px; position: absolute; transform: translate(-50%,-50%); cursor: pointer; font-size: 14px; }
+.cost-button { width: 36px; height: 36px; position: absolute; transform: translate(-50%,-50%); cursor: pointer; font-size: 14px; }
 .cost-button[aria-pressed="true"] { outline: 2px solid currentColor; outline-offset: 1px; }
 .cost-button:disabled { opacity: 1; }
 .network-stats { display: flex; gap: 18px; flex-wrap: wrap; font-size: 13px; }
@@ -204,16 +203,16 @@ button:disabled { cursor: default; opacity: .65; }
 .expected-output { background: transparent; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; line-height: 1.8; margin: 8px 0 20px; }
 .output-label { font-size: 11px !important; font-weight: 650; margin-bottom: 0; }
 @media(max-width:760px) {
- .game-toolbar, .game-feedback, .lesson-panel { padding: 24px; --glass-radius: 24px; }
+ .game-toolbar, .game-feedback, .lesson-panel { padding: 24px; }
  .game-toolbar { display: block; }
  .game-toolbar .filter-group { margin-top: 12px; }
  .game-toolbar label { flex-wrap: wrap; }
- .island { --glass-radius: 29px; width: 58px; height: 58px; }
+ .island { width: 58px; height: 58px; }
  .island-position { width: 66px; font-size: 10px; }
  .island strong { right: 5px; bottom: 4px; font-size: 10px; }
  .animal { --animal-frame: 40px; }
  .island-position small { font-size: 9px; }
- .cost-button { --glass-radius: 14px; width: 28px; height: 28px; font-size: 11px; }
+ .cost-button { width: 28px; height: 28px; font-size: 11px; }
  .edge-list { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 6px 16px; }
  .lesson-panel h2 { font-size: 19px; }
  .lesson-panel p, .lesson-panel li { font-size: 13px; }

@@ -13,7 +13,10 @@ precision highp int;
 precision highp usampler2D;
 
 uniform usampler2D u_perm;   // 256×1 noise permutation table (noise.js)
-uniform sampler2D u_palette; // 256×1 nicrainha palette, one 256-gon rotation
+uniform sampler2D u_palette;
+uniform int u_rows;
+uniform int u_rotation;
+uniform float u_whiteLength; // 256×1 nicrainha palette, one 256-gon rotation
 uniform vec2 u_resolution;   // canvas size in device px
 uniform float u_z;           // noise depth: the animation time
 uniform float u_min;         // this frame's exact noise range (noise.js)
@@ -165,7 +168,8 @@ void traceGlass(inout vec3 pos, inout vec3 dir) {
 }
 
 // The point of the scene the viewer sees at `pixel`.
-vec2 seenPoint(vec2 pixel) {
+vec2 seenPoint(vec2 pixel, out float thickness) {
+  thickness = 0.0;
   for (int i = 0; i < 32; i++) {
     if (i >= u_panelCount) break;
     vec2 center = u_panels[i].xy;
@@ -181,6 +185,7 @@ vec2 seenPoint(vec2 pixel) {
     if (s >= radius) continue;
 
     float h = sqrt(radius * radius - s * s);
+    thickness = h;
     vec3 pos = vec3(xy, gap + h);
     vec3 normal = vec3(offset, h) / radius;
     vec3 dir = refract(vec3(0.0, 0.0, -1.0), normal, 1.0 / u_ior);
@@ -191,14 +196,18 @@ vec2 seenPoint(vec2 pixel) {
 }
 
 // ── Color ───────────────────────────────────────────────────────────────────
-// The glass only changes where the background is sampled. The color is a
-// direct palette lookup, so every pixel is exactly a nicrainha palette color.
+// Refraction selects the background position; thickness selects a lighter
+// Nicrainha ring, without alpha blending, tint or blur.
 
 void main() {
   vec2 pixel = vec2(gl_FragCoord.x, u_resolution.y - gl_FragCoord.y);
-  float value = backgroundAt(seenPoint(pixel));
+  float thickness;
+  float value = backgroundAt(seenPoint(pixel, thickness));
   // u_min and u_range are the field's exact extremes, so t is already in
   // [0, 1]; the clamp only absorbs float32 rounding.
   float t = clamp((value - u_min) / u_range, 0.0, 1.0);
-  outColor = texelFetch(u_palette, ivec2(int(floor(t * 255.0 + 0.5)), 0), 0);
+  int vertex = (int(floor(t * 255.0 + 0.5)) + u_rotation) & 255;
+  float towardWhite = 1.0 - exp(-thickness / u_whiteLength);
+  int row = int(floor(towardWhite * float(u_rows - 1) + 0.5));
+  outColor = texelFetch(u_palette, ivec2(vertex, row), 0);
 }

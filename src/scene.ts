@@ -1,3 +1,4 @@
+import * as rings from 'virtual:lightness-rings';
 import { DEFAULT_LIGHTNESS, generatePalettes } from 'nicrainha';
 import { buildPermutation, fieldRange } from './noise';
 import fragmentSource from './shaders/scene.frag?raw';
@@ -11,7 +12,8 @@ const MAX_PANELS = 32;
 let glassElements: HTMLElement[] = [];
 let layoutSignature = '';
 const params = new URLSearchParams(location.search);
-const palette = generatePalettes(256, { lightness: DEFAULT_LIGHTNESS })[Math.floor(Math.random() * 256)];
+const rotation = Math.floor(Math.random() * 256);
+const palette = generatePalettes(256, { lightness: DEFAULT_LIGHTNESS })[rotation];
 const permutation = buildPermutation(Math.floor(Math.random() * 99999));
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
 const startedAt = performance.now();
@@ -87,6 +89,9 @@ function startRenderer(): void {
   const locations = {
     permutation: gl.getUniformLocation(program, 'u_perm'),
     palette: gl.getUniformLocation(program, 'u_palette'),
+    rows: gl.getUniformLocation(program, 'u_rows'),
+    rotation: gl.getUniformLocation(program, 'u_rotation'),
+    whiteLength: gl.getUniformLocation(program, 'u_whiteLength'),
     resolution: gl.getUniformLocation(program, 'u_resolution'),
     z: gl.getUniformLocation(program, 'u_z'),
     min: gl.getUniformLocation(program, 'u_min'),
@@ -96,17 +101,19 @@ function startRenderer(): void {
     panelCount: gl.getUniformLocation(program, 'u_panelCount'),
     ior: gl.getUniformLocation(program, 'u_ior'),
   };
-  function lookupTexture(unit: number, internalFormat: number, format: number, data: Uint8Array): void {
+  function lookupTexture(unit: number, internalFormat: number, format: number, data: Uint8Array, rows = 1): void {
     gl!.activeTexture(gl!.TEXTURE0 + unit);
     gl!.bindTexture(gl!.TEXTURE_2D, gl!.createTexture());
     gl!.texParameteri(gl!.TEXTURE_2D, gl!.TEXTURE_MIN_FILTER, gl!.NEAREST);
     gl!.texParameteri(gl!.TEXTURE_2D, gl!.TEXTURE_MAG_FILTER, gl!.NEAREST);
-    gl!.texImage2D(gl!.TEXTURE_2D, 0, internalFormat, 256, 1, 0, format, gl!.UNSIGNED_BYTE, data);
+    gl!.texImage2D(gl!.TEXTURE_2D, 0, internalFormat, 256, rows, 0, format, gl!.UNSIGNED_BYTE, data);
   }
   lookupTexture(0, gl.R8UI, gl.RED_INTEGER, permutation);
-  lookupTexture(1, gl.RGBA8, gl.RGBA, new Uint8Array(palette.flatMap(({ r, g, b }) => [r, g, b, 255])));
+  lookupTexture(1, gl.RGB8, gl.RGB, Uint8Array.from(atob(rings.RGB), c => c.charCodeAt(0)), rings.ROWS);
   gl.uniform1i(locations.permutation, 0);
   gl.uniform1i(locations.palette, 1);
+  gl.uniform1i(locations.rows, rings.ROWS);
+  gl.uniform1i(locations.rotation, rotation);
   gl.uniform1i(locations.panelCount, 0);
   gl.uniform1f(locations.ior, 1.5);
   geometryDirty = true;
@@ -129,6 +136,8 @@ function startRenderer(): void {
     const signature = `${window.scrollX},${window.scrollY},${dpr},${bounds.width},${bounds.height}`;
     if (signature !== layoutSignature) geometryDirty = true;
     layoutSignature = signature;
+    const rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
+    gl!.uniform1f(locations.whiteLength, 8 * rem * dpr);
     if (!geometryDirty) return;
 
     // getBoundingClientRect is viewport-relative. Scrolling moves the DOM
@@ -142,8 +151,12 @@ function startRenderer(): void {
       .filter(({ rect }) => rect.width > 0 && rect.height > 0 && rect.bottom > bounds.top && rect.top < bounds.bottom && rect.right > bounds.left && rect.left < bounds.right);
     if (visible.length > MAX_PANELS) throw new Error('Too many visible glass panels.');
     visible.forEach(({ element, rect }, i) => {
-      const defaultRadius = parseFloat(getComputedStyle(element).getPropertyValue('--glass-radius'));
-      const baseRadius = Math.min(knob('radius', defaultRadius), rect.width / 2, rect.height / 2);
+      const globalRadius = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--glass-radius'));
+      const circular = element.matches('.island, .cost-button');
+      const baseRadius = circular
+        ? Math.min(rect.width, rect.height) / 2
+        : Math.min(knob('radius', globalRadius), rect.width / 2, rect.height / 2);
+      element.style.setProperty('--glass-render-radius', `${baseRadius}px`);
       panels.set([
         (rect.left - bounds.left + rect.width / 2) * dpr,
         (rect.top - bounds.top + rect.height / 2) * dpr,

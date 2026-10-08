@@ -33,11 +33,11 @@ The course includes all **18 dated events from the teaching plan**, plus the Kru
 
 - Desktop: compact glass menu and two-column course picker; course events form a vertical timeline of glass panels.
 - Mobile: a vertical course list and event timeline over the same fixed animated canvas. Details open as rounded glass reading panels.
-- The renderer discovers DOM elements marked `data-glass`, reads their CSS radius and updates the positions on scroll, resize or page changes. Off-screen panels are culled. Capacity is 32 simultaneously visible panels.
-- In-page navigation preserves the same palette, permutation and animation clock. The glass model retains refractive index 1.5 and air gap `(1/(n−1)−1/n) × radius`. Color is an exact palette lookup, without blur, tint or alpha blending.
+- The renderer discovers DOM elements marked `data-glass`, uses one global 28 CSS pixel corner radius, clamped only for small panels; animal islands and edge-cost buttons remain circles and updates the positions on scroll, resize or page changes. Off-screen panels are culled. Capacity is 32 simultaneously visible panels.
+- In-page navigation preserves the same palette, permutation and animation clock. The glass model retains refractive index 1.5 and air gap `(1/(n−1)−1/n) × radius`. Color is an exact lookup into 128 precomputed Nicrainha lightness rings. Glass thickness h lifts lightness by L = 100 − (100 − L_bg) exp(−h/ℓ), with ℓ = 8 rem. No blur, tint or alpha blending.
 - `?speed=0.5` adjusts animation speed; `?speed=0` freezes it. `?radius=0` hides the glass for comparison. Put query parameters before the hash route.
 - Mobile uses `viewport-fit=cover`, safe-area content padding and opaque top/bottom safe-area strips. Text and WebGL are covered at those edges. The strips and browser theme color share one randomly rotated Nicrainha color at its default CIE Lab lightness (73.9124), stable until reload. Browser-owned toolbar opacity remains controlled by the browser.
-- Glass panels retain their DOM dimensions and CSS corner radius during scrolling. Their positions are updated in the shared WebGL scene; the HTML text remains on a separate browser layer, so brief scroll misalignment can still occur on mobile.
+- Glass panels retain their DOM dimensions and global corner radius during scrolling. Their positions are updated in the shared WebGL scene; the HTML text remains on a separate browser layer, so brief scroll misalignment can still occur on mobile.
 - Reduced-motion preference freezes the animated background field. Without WebGL2, a nicrainha palette color and outlined panels keep all navigation/content available. Context loss/restoration is handled.
 - System fonts; no tracking, external image assets or backend. Current date is the device's local calendar date and updates while the page is open.
 
@@ -62,3 +62,5 @@ The noise implementation and shaders are adapted from [hcubasd/nicrainha](https:
 `src/kruskal/game.ts` draws HTML glass islands and controls over SVG paths. `src/lessons/tutorial.ts` provides ten notebook-sized steps, generated blank notebooks and optional browser-local completion. Six animal sprite sheets were copied from the family's supplied Graphics directory, preserving originals. CSS animates the four front-facing frames of each 4×4 sheet, with discrete steps and slightly varied timing. Animals walk or hop in place; reduced-motion preference keeps them on a static front-facing frame. No RPG scenery or tiles are used. These supplied assets have no bundled license; their source and redistribution terms remain to be established before public deployment. Nicrainha's MIT notice applies to its own code, not these sprites or course PDFs.
 
 Validation includes exhaustive spanning-tree comparison on both maps and 30 additional weighted graphs, Python/TypeScript agreement, beginner cell outputs, game actions, tied alternative solutions, notebook download, progress persistence and layout at 280/390/768/1280 px.
+
+Glass geometry and lightness ported from nicrainha docs commit `375d1bd`: `docs/README.md`, `docs/lightness-rings.js` and `docs/shaders/scene.frag`.
