@@ -1,3 +1,4 @@
+import { scrollToElement } from '../scroll';
 import fullCode from './kruskal.py?raw';
 import { highlightPython, copyCode } from '../kruskal/highlight';
 export interface LessonStep { title: string; text: string; code: string; output?: string; task: string; answer: string; }
@@ -28,7 +29,7 @@ export function mountLesson(root:HTMLElement):()=>void {
   const change=(event:Event):void=>{const input=event.target as HTMLInputElement;if(input.dataset.done===undefined)return;const index=Number(input.dataset.done);done=done.filter(n=>n!==index);if(input.checked)done.push(index);try{localStorage.setItem(key,JSON.stringify(done));}catch{}progress();};
   const click=async(event:Event):Promise<void>=>{
     const target=(event.target as HTMLElement).closest<HTMLElement>('[data-copy],[data-notebook],[data-step-link]');if(!target)return;
-    if(target.dataset.stepLink){event.preventDefault();root.querySelector(`#lesson-step-${target.dataset.stepLink}`)?.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});}
+    if(target.dataset.stepLink){event.preventDefault();const step=root.querySelector(`#lesson-step-${target.dataset.stepLink}`);if(step) scrollToElement(step);}
     if(target.dataset.copy!==undefined){const ok=await copyCode(steps[Number(target.dataset.copy)].code);target.textContent=ok?'Copiado!':'Selecione o código para copiar';}
     if(target.hasAttribute('data-notebook')){
       const notebook={nbformat:4,nbformat_minor:5,metadata:{kernelspec:{display_name:'Python 3',language:'python',name:'python3'},language_info:{name:'python'}},cells:steps.flatMap((s,i)=>[{cell_type:'markdown',id:`texto-${i}`,metadata:{},source:[`## ${i+1}. ${s.title}\n\n${s.text}\n\n**Sua vez:** ${s.task}\n\nAcompanhe os exemplos na página da aula. Digite seu código na célula abaixo.\n${s.output?'\nSaída esperada:\n```text\n'+s.output+'\n```':''}`]},{cell_type:'code',id:`codigo-${i}`,metadata:{},execution_count:null,outputs:[],source:[]}])};

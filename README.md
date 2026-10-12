@@ -31,15 +31,16 @@ The course includes all **18 dated events from the teaching plan**, plus the Kru
 
 ## Rendering and layout
 
-- Desktop: compact glass menu and two-column course picker; course events form a vertical timeline of glass panels.
-- Mobile: a vertical course list and event timeline over the same fixed animated canvas. Details open as rounded glass reading panels.
-- The renderer discovers DOM elements marked `data-glass`, uses one global 28 CSS pixel corner radius, clamped only for small panels; animal islands and edge-cost buttons remain circles and updates the positions on scroll, resize or page changes. Off-screen panels are culled. Capacity is 32 simultaneously visible panels.
-- In-page navigation preserves the same palette, permutation and animation clock. The glass model retains refractive index 1.5 and air gap `(1/(n−1)−1/n) × radius`. Color is an exact lookup into 128 precomputed Nicrainha lightness rings. Glass thickness h lifts lightness by L = 100 − (100 − L_bg) exp(−h/ℓ), with ℓ = 8 rem. No blur, tint or alpha blending.
-- `?speed=0.5` adjusts animation speed; `?speed=0` freezes it. `?radius=0` hides the glass for comparison. Put query parameters before the hash route.
-- Mobile uses `viewport-fit=cover`, safe-area content padding and opaque top/bottom safe-area strips. Text and WebGL are covered at those edges. The strips and browser theme color share one randomly rotated Nicrainha color at its default CIE Lab lightness (73.9124), stable until reload. Browser-owned toolbar opacity remains controlled by the browser.
-- Glass panels retain their DOM dimensions and global corner radius during scrolling. Their positions are updated in the shared WebGL scene; the HTML text remains on a separate browser layer, so brief scroll misalignment can still occur on mobile.
-- Reduced-motion preference freezes the animated background field. Without WebGL2, a nicrainha palette color and outlined panels keep all navigation/content available. Context loss/restoration is handled.
-- System fonts; no tracking, external image assets or backend. Current date is the device's local calendar date and updates while the page is open.
+- Adapted from Nicrainha docs commit `a9773cc`: shared glass/Perlin shaders, endless procedural floor, fixed noise-to-palette mapping and lightness-dependent fractal detail with energy normalization and per-pixel footprint filtering.
+- One global **28 CSS px** radius for panels; animal islands and edge-cost buttons remain circles. Up to 32 visible panels are culled and submitted with reusable uniform buffers. Refraction retains n = 1.5 and its derived focal gap.
+- All 256 lightness rings (L* 0–100) are precomputed at build time. A final ring represents the chosen background lightness exactly. Glass moves toward white or black according to black/white text contrast, with the docs' exponential thickness model and 8 rem length. Colors remain exact palette lookups without tint, blur or alpha blending.
+- **Aparência** in the top menu opens a keyboard-accessible lightness slider. The dialog backdrop is transparent for an unobstructed live preview. Changes apply in place, preserve palette rotation/noise seed, update the browser theme color and persist locally. `?lightness=<0–100>` overrides the saved value. Default is Nicrainha's L* 73.9124; “Restaurar padrão” restores it.
+- Bounded vertical scrolling adapts the showcase's shared-frame panning: HTML content and glass positions move in the same render frame, and the background travels with them. Touch release velocity uses the last 100 ms, a 40 ms stopped threshold and exact exponential fling integration with decay 0.998 per ms. Wheels/trackpads keep their supplied momentum; keyboard navigation and focus scrolling are supported. Tutorial jump links and route scroll restoration use the same camera. Pages do not wrap like the demo. Background pan accumulates actual wheel/touch/keyboard movement independently of the page position, so route restoration and tutorial jumps do not jump the background.
+- Exact device-pixel canvas sizing uses `device-pixel-content-box` when available, with the docs' Safari fallback. Animation redraws only when the view changes or noise can step a palette color, scaled by fractal detail. No per-frame CPU noise-range search, palette generation, texture upload or full-screen render targets.
+- `?speed=0.5` adjusts animation speed; `?speed=0` freezes the background. `?radius=0` hides rectangular glass for comparison (circular islands remain circles). Query parameters go before the hash route.
+- Reduced motion freezes background evolution. WebGL failure leaves all content, controls and camera scrolling usable against the palette fallback. Context restoration rebuilds renderer state.
+- Mobile retains safe-area padding and solid top/bottom edge fills matching the selected palette/lightness. Browser-owned toolbar opacity remains browser-controlled.
+- System fonts, local preference storage, no tracking or backend. Python code blocks retain their black background and Nicrainha syntax colors in both modes.
 
 ## Source
 
@@ -63,4 +64,4 @@ The noise implementation and shaders are adapted from [hcubasd/nicrainha](https:
 
 Validation includes exhaustive spanning-tree comparison on both maps and 30 additional weighted graphs, Python/TypeScript agreement, beginner cell outputs, game actions, tied alternative solutions, notebook download, progress persistence and layout at 280/390/768/1280 px.
 
-Glass geometry and lightness ported from nicrainha docs commit `375d1bd`: `docs/README.md`, `docs/lightness-rings.js` and `docs/shaders/scene.frag`.
+Renderer ported from nicrainha docs commit `a9773cc`: see `docs/README.md`, `gl.js`, `noise.js`, `lightness-rings.js` and the glass/Perlin shaders.

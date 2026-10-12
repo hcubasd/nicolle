@@ -1,3 +1,4 @@
+import { scrollPosition, scrollToPosition } from './scroll';
 import { graphCourse, graphEvents, type CourseEvent } from './data/grafos';
 import './styles.css';
 import './scene';
@@ -42,6 +43,7 @@ function topbar(onGraphs: boolean): string {
   return `<header class="topbar glass" data-glass>
     <a class="brand" href="#/" aria-label="Nicolle — início">Nicolle<span class="brand-dot" aria-hidden="true">.</span></a>
     <nav class="topnav" aria-label="Menu principal"><a href="#/" ${!onGraphs ? 'aria-current="page"' : ''}>Disciplinas</a>${onGraphs ? '<a href="#/grafos" aria-current="page">Grafos</a>' : ''}</nav>
+    <button class="settings-button" type="button" data-settings aria-label="Configurar aparência">Aparência</button>
     <time class="today" datetime="${today()}" title="${fullDate(today())}">${dateObject(today()).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })}</time>
   </header>`;
 }
@@ -127,11 +129,11 @@ function render(): void {
   }
 }
 window.addEventListener('hashchange', () => {
-  scrollPositions.set(currentHash, window.scrollY);
+  scrollPositions.set(currentHash, scrollPosition());
   currentHash = location.hash || '#/';
   render();
   document.querySelector<HTMLElement>('#view-title')?.focus({ preventScroll: true });
-  window.scrollTo(0, scrollPositions.get(currentHash) || 0);
+  scrollToPosition(scrollPositions.get(currentHash) || 0);
 });
 app.addEventListener('click', event => {
   const target = (event.target as HTMLElement).closest<HTMLButtonElement>('button[data-period], button[data-category]');
