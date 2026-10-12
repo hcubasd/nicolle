@@ -38,7 +38,7 @@ function applyLightness(next:number):void {
   document.documentElement.style.setProperty('--fallback-background',css);
   document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')!.content=css;
   if(gl && uniform && !gl.isContextLost()) {
-    uploadTables(gl,uniform,permutation,next,rotation);
+    uploadTables(gl,uniform,permutation,next,rotation,palette);
     gl.uniform1f(uniform.u_gain,gain);
   }
   dirty=true;

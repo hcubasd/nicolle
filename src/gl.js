@@ -57,6 +57,7 @@ const includes = { "perlin.glsl": perlinSource, "glass.glsl": glassSource };
 export function createProgram(gl, fragmentSource, uniformNames) {
   // Context restoration invalidates the previous texture objects.
   textures.delete(gl);
+  tablesReady.delete(gl);
   function compile(type, source) {
     const shader = gl.createShader(type);
     gl.shaderSource(shader, source);
@@ -102,22 +103,29 @@ function lookupTexture(gl, unit, internalFormat, format, data, rows = 1) {
 // here by nicrainha at exactly `lightness`. Sets the glass's target, white or
 // black (see modeFor), and picks a random rotation of the palette, an index
 // offset into the rows (u_rotation).
-export function uploadTables(gl, uniform, perm, lightness, rotation) {
-  lookupTexture(gl, 0, gl.R8UI, gl.RED_INTEGER, perm);
-  gl.uniform1i(uniform.u_perm, 0);
-
-  const table = new Uint8Array((rings.ROWS + 1) * 256 * 3);
-  table.set(Uint8Array.from(atob(rings.RGB), (c) => c.charCodeAt(0)));
-  generatePalettes(256, { lightness })[0].forEach(({ r, g, b }, vertex) => {
-    table.set([r, g, b], (rings.ROWS * 256 + vertex) * 3);
-  });
-  lookupTexture(gl, 1, gl.RGB8, gl.RGB, table, rings.ROWS + 1);
-  gl.uniform1i(uniform.u_palette, 1);
-
-  gl.uniform1f(uniform.u_lightness, lightness);
-  gl.uniform1f(uniform.u_target, modeFor(lightness) === "dark" ? 0 : 100);
-  gl.uniform1i(uniform.u_rotation, rotation ?? Math.floor(Math.random() * 256));
-  gl.uniform1f(uniform.u_ior, GLASS_IOR);
+const tablesReady = new WeakSet();
+const ringBytes = Uint8Array.from(atob(rings.RGB), c => c.charCodeAt(0));
+export function uploadTables(gl, uniform, perm, lightness, rotation, palette) {
+  if (!tablesReady.has(gl)) {
+    lookupTexture(gl, 0, gl.R8UI, gl.RED_INTEGER, perm);
+    const table = new Uint8Array((rings.ROWS + 1) * 256 * 3);
+    table.set(ringBytes);
+    lookupTexture(gl, 1, gl.RGB8, gl.RGB, table, rings.ROWS + 1);
+    tablesReady.add(gl);
+  }
+  // Lightness changes replace only the exact background ring, not the full table.
+  const ring = palette ?? generatePalettes(256, { lightness })[0];
+  const row = new Uint8Array(256 * 3);
+  ring.forEach(({r,g,b},vertex) => row.set([r,g,b],vertex*3));
+  gl.activeTexture(gl.TEXTURE1);
+  gl.bindTexture(gl.TEXTURE_2D, textures.get(gl)[1]);
+  gl.texSubImage2D(gl.TEXTURE_2D,0,0,rings.ROWS,256,1,gl.RGB,gl.UNSIGNED_BYTE,row);
+  gl.uniform1i(uniform.u_perm,0);
+  gl.uniform1i(uniform.u_palette,1);
+  gl.uniform1f(uniform.u_lightness,lightness);
+  gl.uniform1f(uniform.u_target,modeFor(lightness) === "dark" ? 0 : 100);
+  gl.uniform1i(uniform.u_rotation,rotation ?? Math.floor(Math.random()*256));
+  gl.uniform1f(uniform.u_ior,GLASS_IOR);
 }
 
 // Calls back with the canvas's exact size in device pixels whenever it
