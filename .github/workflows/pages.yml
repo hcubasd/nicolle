@@ -25,7 +25,7 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
-      - name: Verify Kruskal in TypeScript and Python
+      - name: Verify Kruskal, rescue rules and Python lesson
         run: npm test
       - name: Build site
         run: npm run build

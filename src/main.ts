@@ -3,6 +3,7 @@ import { graphCourse, graphEvents, type CourseEvent } from './data/grafos';
 import './styles.css';
 import './scene';
 import { gamePage, mountGame } from './kruskal/game';
+import { labPage, mountLab } from './kruskal/lab';
 import { lessonPage, mountLesson } from './lessons/tutorial';
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
@@ -113,7 +114,11 @@ function render(): void {
   const route = (location.hash || '#/').slice(1).replace(/\/$/, '') || '/';
   if (route === '/') app.innerHTML = home();
   else if (route === '/grafos') app.innerHTML = roadmap();
-  else if (route === '/grafos/kruskal/aula') {
+  else if (route === '/grafos/kruskal/laboratorio') {
+    document.title = 'Laboratório de Kruskal · Nicolle';
+    app.innerHTML = topbar(true) + labPage();
+    cleanupPage = mountLab(app.querySelector<HTMLElement>('#game-root')!);
+  } else if (route === '/grafos/kruskal/aula') {
     document.title = 'Aprender Kruskal · Nicolle';
     app.innerHTML = topbar(true) + lessonPage();
     cleanupPage = mountLesson(app);

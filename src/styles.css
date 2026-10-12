@@ -254,3 +254,50 @@ html, body { height: 100%; overflow: hidden; }
 .settings-dialog input { width: 100%; margin: 22px 0; accent-color: var(--ink, #000); }
 .settings-actions { display: flex; justify-content: space-between; gap: 16px; }
 .settings-actions button { border: 0; background: transparent; padding: 10px 0; cursor: pointer; text-decoration: underline; }
+/* Rescue: island buttons, readable path prices and a traveling sprite queue. */
+.bridge { stroke: currentColor; }
+.rescue-board { margin: 34px 0; }
+.rescue-board .island { color: inherit; border: 0; padding: 0; background: transparent; cursor: pointer; }
+.rescue-board .island:disabled { opacity: 1; cursor: default; }
+.current-island { outline: 2px solid currentColor; outline-offset: 4px; }
+.rescued-mark { font-size: 20px; }
+.party-layer { position: absolute; inset: 0; pointer-events: none; z-index: 2; }
+.walk-sprite { position: absolute; width: 40px; height: 40px; transform: translate(-50%,-100%); background-size: 400% 400%; background-repeat: no-repeat; image-rendering: pixelated; pointer-events: none; }
+.human-sprite { height: 60px; }
+.path-price { fill: currentColor; font: 22px system-ui,sans-serif; paint-order: stroke; stroke: var(--fallback-background); stroke-width: 8px; stroke-linejoin: round; }
+.rescued-list { display: flex; flex-wrap: wrap; gap: 10px 18px; font-size: 12px; }
+.travel-options { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px 20px; }
+.travel-options button { text-align: left; border-bottom: 1px solid currentColor; padding-bottom: 12px; }
+.travel-options small { display: block; margin-top: 5px; font-size: 11px; }
+.group-picture { margin: 18px 0; }
+.group-picture svg { display: block; width: min(100%,380px); height: auto; overflow: visible; }
+.group-picture .group-edge { fill: none; stroke: currentColor; stroke-width: 3; }
+.group-picture .candidate-edge { stroke-width: 2; stroke-dasharray: 5 6; }
+.group-picture circle { fill: var(--fallback-background); stroke: currentColor; stroke-width: 1.5; }
+.group-picture text { fill: currentColor; font: 13px system-ui,sans-serif; }
+.group-legend { display: flex; gap: 10px 18px; flex-wrap: wrap; font-size: 12px; }
+.lesson-phase { margin: 30px 10px 18px; font-size: 18px; font-weight: 600; }
+.lesson-phase-note { margin: 0 10px 20px; font-size: 13px; line-height: 1.7; }
+@media(max-width:760px) {
+  .walk-sprite { width: 30px; height: 30px; }
+  .human-sprite { height: 45px; }
+  .rescue-board { margin-inline: -8px; width: calc(100% + 16px); }
+  .travel-options { grid-template-columns: minmax(0,1fr); }
+  .rescued-list { font-size: 11px; gap: 8px 12px; }
+}
+/* Completion keeps the same layout before and after checking. */
+.lesson-panel.is-completed { box-shadow: inset 0 0 0 1px currentColor; }
+.lesson-step-heading { align-items: center; }
+.lesson-step-heading label { display: flex; align-items: center; gap: 12px; flex: 0 0 190px; width: 190px; height: 32px; }
+.lesson-step-heading input { flex: 0 0 14px; width: 14px; height: 14px; margin: 0; }
+.completion-text { display: inline-block; font-weight: 400; white-space: nowrap; line-height: 20px; }
+.resume-lesson { font-weight: 650 !important; text-decoration: underline; }
+/* One path state at a time: unbought dashes, oracle dots, bought solid. */
+.rescue-board .bridge { opacity: 1; stroke-width: 1.5; stroke-dasharray: 6 7; stroke-linecap: butt; }
+.rescue-board .oracle-path { stroke-width: 3; stroke-dasharray: 0 11; stroke-linecap: round; }
+.rescue-board .built { stroke-width: 4; stroke-dasharray: none; stroke-linecap: butt; }
+.game-toolbar .oracle-button { border: 1px solid currentColor; border-radius: 16px; padding: 10px 14px; font-weight: 650; }
+.oracle-banner { box-shadow: inset 0 0 0 1px currentColor; }
+.oracle-purchases { display: flex; flex-wrap: wrap; gap: 10px 16px; }
+.oracle-purchases span { padding: 0; }
+.map-legend { display: flex; flex-wrap: wrap; gap: 10px 18px; margin: 0 8px 28px; font-size: 12px; }

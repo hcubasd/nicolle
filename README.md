@@ -12,7 +12,7 @@ npm run dev
 The dev server listens on all interfaces at port **5173**. For a container, open the **Network IP URL** printed by Vite. Requires Node 23–26 (Node 24 recommended).
 
 ```sh
-npm test         # Exhaustive MST comparisons + Python/TypeScript agreement (Python 3 required)
+npm test         # MST, rescue rules and every Python lesson cell (Python 3 required)
 npm run build    # TypeScript check + static output in dist/
 npm run preview  # Preview the static build on port 4173
 ```
@@ -24,8 +24,9 @@ Relative asset URLs and hash routes support deployment at `https://hcubasd.githu
 - `#/`: course picker, current local date, course codes and hours. Grafos is available; the other five course pages remain placeholders.
 - `#/grafos`: lightweight roadmap. Defaults to events from the current local day onward. Filters show the whole semester, assessments or classes.
 - `#/grafos/evento/<id>`: event detail with its topics, date, evaluation notes and available materials. Links can be shared and refreshed directly.
-- `#/grafos/kruskal/aula`: ten-step beginner Python tutorial, executable examples, expected outputs, exercises, local progress and a downloadable Colab notebook with blank code cells. Only Python blocks have a black background; highlighting uses 12 chromatic ANSI colors mapped through nicrainha `mapColors`.
-- `#/grafos/evento/jogo-kruskal`: Kruskal assignment outline, delivery **13 October 2026**, confirmed by the family. Delivery time and official assessment instructions have not been provided. Playable glass-island game, two maps, manual construction, minimum-cost verification, Kruskal cheat and step-by-step algorithm replay.
+- `#/grafos/kruskal/aula`: 31-step beginner Python tutorial in four study phases. It builds connections and group labels by hand before automating union, then implements the rescue game in text with the same four-island data. Executable examples, expected outputs, exercises, prominent completion states, a resume button and a self-contained Colab notebook with examples and blank code cells. Only Python blocks have a black background; highlighting uses 12 chromatic ANSI colors mapped through nicrainha `mapColors`.
+- `#/grafos/evento/jogo-kruskal`: Kruskal assignment outline, delivery **13 October 2026**, confirmed by the family. Delivery time and official assessment instructions have not been provided. Click-to-travel rescue game with two maps, free starting-island choice, one-time bridge purchases, free repeat travel and a Gunner02 character followed by rescued animals. The oracle reveals a minimum purchase network and an example walk without buying bridges or moving the player.
+- `#/grafos/kruskal/laboratorio`: the separate edge-selection exercise and step-by-step group/union replay; the tutorial links to it when studying the oracle.
 
 The course includes all **18 dated events from the teaching plan**, plus the Kruskal assignment. October 13 has two separate events: the scheduled Dijkstra class and the assignment delivery. Exam scope and grade weights are taken from the supplied plan. Past events are identified by date only; completion is not presumed. Recovery and replacement assessments are conditional. PDFs are bundled in `public/grafos/`.
 
@@ -65,3 +66,13 @@ The noise implementation and shaders are adapted from [hcubasd/nicrainha](https:
 Validation includes exhaustive spanning-tree comparison on both maps and 30 additional weighted graphs, Python/TypeScript agreement, beginner cell outputs, game actions, tied alternative solutions, notebook download, progress persistence and layout at 280/390/768/1280 px.
 
 Renderer ported from nicrainha docs commit `a9773cc`: see `docs/README.md`, `gl.js`, `noise.js`, `lightness-rings.js` and the glass/Perlin shaders.
+
+## Rescue and lesson validation
+
+`src/kruskal/rescue.ts` separates game rules from animation: only adjacent islands can be reached; a canonical bridge ID is paid once in either direction; starting/return visits never duplicate animals. `src/kruskal/game.ts` follows the actual SVG curves with directional sprite frames, a recent trajectory for followers and depth ordering by foot position. Idle sprites settle to the same front frame. Reduced motion completes travel immediately. Edge masks scale to the islands' actual CSS radius plus outline clearance. Paths have mutually exclusive states: thin dashes before purchase, round dots for oracle-recommended purchases, solid lines after purchase. The oracle has one purchase-list panel. Completion uses a thin inset border and a fixed-size checkbox label, without layout changes.
+
+`src/lessons/resgate.py` and `public/grafos/resgate.py` are identical standalone text-game references. The lesson builds this program gradually: data → input → state → neighbors → purchased-bridge membership → a single trip → while/commands → oracle → full game. Kruskal remains the simple dictionary-label implementation; it computes a minimum network, not a TSP route. The player may revisit islands and free bridges.
+
+`npm test` now also checks the rescue from every possible starting island on both maps, minimum-cost example walks, free return trips, invalid moves, all 31 Python cells executed in order, exact expected outputs and text-game cases (oracle, invalid input, early exit and a non-optimal win). Browser checks cover moving/resting sprite state, depth, mobile edge clearance, oracle non-interference, completion persistence and downloaded notebook contents.
+
+The expanded lesson uses progress key `nicolle-kruskal-lesson-v2`. Only unchanged first-five-stage progress can migrate from the old ten-stage lesson; expanded group stages require their own completion. The original Gunner02 sheet was copied unmodified from `Graphics/Characters/024-Gunner02.png`; existing animal sheets remain unchanged.
