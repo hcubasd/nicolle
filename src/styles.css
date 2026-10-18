@@ -98,3 +98,5 @@ h2{font-size:24px;font-weight:550;letter-spacing:-.6px;line-height:1.25;margin:0
 .setup-head .python-menu-link{position:static}
 .step-short{display:none}
 @media(max-width:380px){.python-head .game-back{padding:0 12px}.python-head .step-wide{display:none}.python-head .step-short{display:inline}}
+
+.python-input .terminal-enter{flex:none;min-width:64px;min-height:44px;padding:0 8px;border:0;background:transparent;color:inherit;font:inherit;text-decoration:underline;text-underline-offset:3px}

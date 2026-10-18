@@ -25,18 +25,7 @@ onmessage=async({data})=>{
    python.runPython('_execution = _prepare(_source, _points)');
   }
   if(data.answer!==undefined)python.globals.set('_answer',data.answer);
-  let event=JSON.parse(python.runPython(data.answer===undefined?'_advance()':'_advance(_answer)'));
-  const journal=new Map();
-  function collect(event){for(const entry of event.events??[]){const key=`${entry.scope}:${entry.line}:${entry.kind}`;const previous=journal.get(key);journal.set(key,{...entry,count:entry.count+(previous?.count??0),yes:(entry.yes??0)+(previous?.yes??0),no:(entry.no??0)+(previous?.no??0)});}}
-  collect(event);
-  if(data.command==='continue'){
-   let count=0;
-   while(event.type==='pause'){
-    if(++count%200===0)await new Promise(resolve=>setTimeout(resolve,0));
-    event=JSON.parse(python.runPython('_advance()'));collect(event);
-   }
-  }
-  event.events=[...journal.values()];
+  const event=JSON.parse(python.runPython(data.answer===undefined?'_advance()':'_advance(_answer)'));
   send(event);
  }catch(error){send({type:'error',text:String(error)});}
  finally{busy=false;}
