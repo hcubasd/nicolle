@@ -25,7 +25,7 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
-      - name: Verify Kruskal, rescue rules and Python lesson
+      - name: Verify Prim and generated rescue maps
         run: npm test
       - name: Build site
         run: npm run build
