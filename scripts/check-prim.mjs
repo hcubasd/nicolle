@@ -24,6 +24,11 @@ while(outcome(graph,state)==='playing'){
  const edge=edges.sort((a,b)=>b.cost-a.cost)[0];const route=purchaseRoute(graph,state,edge);state=walkRoute(graph,state,route.slice(0,-1));state=buy(graph,state,edge.id);
 }
 assert.equal(outcome(graph,state),'lost');assert(state.rescued.size<16);assert(remainingCoins(graph,state)>=0);
+// A positive balance can still be too small for every remaining bridge.
+const strandedGraph={seed:0,width:300,height:300,islands:[{id:0,x:0,y:0},{id:1,x:100,y:0},{id:2,x:100,y:100}],bridges:[{id:0,a:0,b:1,cost:2},{id:1,a:1,b:2,cost:3},{id:2,a:0,b:2,cost:4}]};
+const stranded=buy(strandedGraph,startAt(strandedGraph,0),2);
+assert.equal(remainingCoins(strandedGraph,stranded),1);assert.equal(cheapestFrontier(strandedGraph,stranded.rescued).cost,2);assert.equal(outcome(strandedGraph,stranded),'lost');
+assert.equal(outcome(strandedGraph,{...stranded,rescued:new Set([0,1,2])}),'won');
 // Prim always finishes with the exact wallet; a wrong purchase can strand it.
 for(const seed of [0,1,42]){const g=generateGraph(128,seed);let s=startAt(g,0);while(outcome(g,s)==='playing'){const e=cheapestFrontier(g,s.rescued),r=purchaseRoute(g,s,e);s=walkRoute(g,s,r.slice(0,-1));s=buy(g,s,e.id);}assert.equal(outcome(g,s),'won');assert.equal(remainingCoins(g,s),0);}
 const broke={...startAt(graph,0),spent:prim(graph).total};assert.throws(()=>buy(graph,broke,0));

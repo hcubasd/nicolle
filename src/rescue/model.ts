@@ -78,7 +78,7 @@ export function prim(graph:Graph,start=0):{bridges:Bridge[];total:number;connect
 }
 export function remainingCoins(graph:Graph,state:Rescue):number {return prim(graph).total-state.spent;}
 export function outcome(graph:Graph,state:Rescue):'playing'|'won'|'lost' {
- if(state.rescued.size===graph.islands.length)return remainingCoins(graph,state)===0?'won':'lost';
+ if(state.rescued.size===graph.islands.length)return 'won';
  if(state.at===null)return 'playing';
  const edge=cheapestFrontier(graph,state.rescued);
  return !edge||edge.cost>remainingCoins(graph,state)?'lost':'playing';
@@ -86,7 +86,7 @@ export function outcome(graph:Graph,state:Rescue):'playing'|'won'|'lost' {
 export function buy(graph:Graph,state:Rescue,id:number):Rescue {
  const edge=graph.bridges[id];if(!edge||state.at===null)throw Error('Ponte inválida.');
  if(state.bought.has(id))return state;
- if(edge.cost>remainingCoins(graph,state))throw Error('Rúpias insuficientes.');
+ if(edge.cost>remainingCoins(graph,state))throw Error('Saldo insuficiente.');
  if(state.rescued.has(edge.a)===state.rescued.has(edge.b))throw Error('Escolha uma ponte que alcance uma nova ilha.');
  const from=state.rescued.has(edge.a)?edge.a:edge.b;
  if(state.at!==from)throw Error('Caminhe até a origem da ponte antes de comprar.');

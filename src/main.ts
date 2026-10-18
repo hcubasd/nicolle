@@ -1,7 +1,9 @@
 import './styles.css';
 import {setStage,invalidateScene,setNavigationFrame,setNavigationPan,snapshotStagePanels,setDepartingPanels} from './scene';
 import {mountRescue} from './rescue/game';
-import {session} from './rescue/session';
+import {startPrimMusic,stopPrimMusic} from './rescue/sound';
+import {session,clearSession} from './rescue/session';
+import {outcome} from './rescue/model';
 const app=document.querySelector<HTMLElement>('#app')!;
 let cleanup:(()=>void)|undefined;
 let previousDepth:number|undefined,navigationX=0,finishTransition:(()=>void)|undefined;
@@ -22,7 +24,7 @@ function ease(time:number):number {
 function render():void {
  finishTransition?.();
  let route=(location.hash||'#/').slice(1).replace(/\/$/,'')||'/';
- if(route==='/grafos/prim/jogo'&&!session){route='/grafos/prim';history.replaceState(null,'','#/grafos/prim');}
+ if(route==='/grafos/prim/jogo'&&(!session||outcome(session.graph,session.state)!=='playing')){route='/grafos/prim';history.replaceState(null,'','#/grafos/prim');}
  const nextDepth=depth(route),direction=previousDepth===undefined?0:Math.sign(nextDepth-previousDepth);
  const animate=direction!==0&&!matchMedia('(prefers-reduced-motion: reduce)').matches;
  const oldPanels=animate?snapshotStagePanels():[];
@@ -30,10 +32,11 @@ function render():void {
  if(outgoing){
   outgoing.className='departing-view';outgoing.inert=true;outgoing.setAttribute('aria-hidden','true');
   // Move the existing DOM rather than duplicating IDs or running a second game.
-  outgoing.append(...Array.from(app.childNodes));document.body.append(outgoing);
+  outgoing.append(...Array.from(app.childNodes));app.parentElement!.append(outgoing);
  }
 
  cleanup?.();cleanup=undefined;setStage();
+ if(!route.startsWith('/grafos/prim')){clearSession();stopPrimMusic();}else startPrimMusic();
  app.className='';
  if(route==='/') {
   document.title='Nicolle · Disciplinas';
@@ -50,7 +53,7 @@ function render():void {
  if(outgoing){
   const movingPanels=oldPanels.map(p=>({...p,clip:p.clip?{...p.clip}:undefined}));
   setDepartingPanels(movingPanels);
-  const width=innerWidth,from=navigationX,to=from+direction*width,start=performance.now();
+  const width=app.clientWidth,from=navigationX,to=from+direction*width,start=performance.now();
   let elapsed=0,lastTick=start;
   app.inert=true;app.style.transform=`translateX(${direction*width}px)`;
   const finish=()=>{
@@ -76,5 +79,11 @@ function render():void {
  }
  invalidateScene();
 }
+// Start/resume the audio context in the trusted click, before hash navigation.
+function primeMusic(event:MouseEvent):void {
+ const link=(event.target as Element).closest<HTMLAnchorElement>('a[href]');
+ if(link?.hash.startsWith('#/grafos/prim')||location.hash.startsWith('#/grafos/prim'))startPrimMusic();
+}
+app.addEventListener('click',primeMusic);
 window.addEventListener('hashchange',render);render();
-if(import.meta.hot)import.meta.hot.dispose(()=>{finishTransition?.();cleanup?.();window.removeEventListener('hashchange',render);});
+if(import.meta.hot)import.meta.hot.dispose(()=>{finishTransition?.();cleanup?.();stopPrimMusic();app.removeEventListener('click',primeMusic);window.removeEventListener('hashchange',render);});

@@ -41,14 +41,19 @@ export function createRenderer(canvas, lightness) {
   // One canvas pixel per device pixel: a canvas the browser rescales blends
   // colors.
   let deviceSize = null;
-  const sizeObserver = observeDeviceSize(canvas, (width, height) => { deviceSize = { width, height }; });
+  const sizeObserver = observeDeviceSize(canvas, size => { deviceSize = size; });
 
-  let dpr, cell, start;
-  function resize() {
+  let dpr, cell, start, lastDpr;
+  function resize(rect) {
     dpr = window.devicePixelRatio || 1;
-    const width = deviceSize?.width ?? Math.round(canvas.clientWidth * dpr);
-    const height = deviceSize?.height ?? Math.round(canvas.clientHeight * dpr);
-    if (width === canvas.width && height === canvas.height && cell) return;
+    // ResizeObserver may still describe the previous orientation. Never use
+    // its cached pixel size for a different CSS size or device-pixel ratio.
+    const current=deviceSize&&Math.abs(deviceSize.cssWidth-rect.width)<.1&&Math.abs(deviceSize.cssHeight-rect.height)<.1&&deviceSize.dpr===dpr&&Math.abs(deviceSize.width-rect.width*dpr)<=1&&Math.abs(deviceSize.height-rect.height*dpr)<=1;
+    const width=current?deviceSize.width:Math.round(rect.width*dpr);
+    const height=current?deviceSize.height:Math.round(rect.height*dpr);
+    if(width<=0||height<=0)return;
+    if(width===canvas.width&&height===canvas.height&&cell&&lastDpr===dpr)return;
+    lastDpr=dpr;
     canvas.width = width;
     canvas.height = height;
     gl.viewport(0, 0, width, height);
@@ -64,8 +69,10 @@ export function createRenderer(canvas, lightness) {
   // stay small however far the view travels.
   function draw(now, { pan, panels, glassLength }) {
     start ??= now;
-    resize();
-    setPanels(gl, uniform, panels, dpr, panelTexture, grid);
+    const rect=canvas.getBoundingClientRect();
+    if(rect.width<=0||rect.height<=0)return;
+    resize(rect);
+    setPanels(gl, uniform, panels, dpr, panelTexture, grid, rect);
     gl.uniform1f(uniform.u_glassLength, glassLength * dpr);
     gl.uniform2f(uniform.u_offset, wrap(pan.x * dpr, PERIOD * cell), wrap(pan.y * dpr, PERIOD * cell));
     gl.uniform1f(uniform.u_z, wrap(((now - start) / 1000) * Z_PER_SECOND, PERIOD));
@@ -157,10 +164,9 @@ function observeDeviceSize(canvas, callback) {
   const observer = new ResizeObserver(([entry]) => {
     const exact = entry.devicePixelContentBoxSize?.[0];
     const dpr = window.devicePixelRatio || 1;
-    callback(
-      exact ? exact.inlineSize : Math.round(entry.contentRect.width * dpr),
-      exact ? exact.blockSize : Math.round(entry.contentRect.height * dpr),
-    );
+    callback({width:exact?exact.inlineSize:Math.round(entry.contentRect.width*dpr),
+      height:exact?exact.blockSize:Math.round(entry.contentRect.height*dpr),
+      cssWidth:entry.contentRect.width,cssHeight:entry.contentRect.height,dpr});
   });
   try {
     observer.observe(canvas, { box: "device-pixel-content-box" });
@@ -172,7 +178,7 @@ function observeDeviceSize(canvas, callback) {
 
 // Visible glass data: box, clip and radius rows, all in device pixels.
 const panelData = new Float32Array(4 * MAX_PANELS * 3);
-function setPanels(gl, uniform, panels, dpr, panelTexture, grid) {
+function setPanels(gl, uniform, panels, dpr, panelTexture, grid, origin) {
   // Each screen tile lists only glass whose bounds touch it. Wide screens
   // do not require scanning every island for every background pixel.
   const tile=128*dpr,cols=Math.ceil(gl.drawingBufferWidth/tile),rows=Math.ceil(gl.drawingBufferHeight/tile);
@@ -181,9 +187,11 @@ function setPanels(gl, uniform, panels, dpr, panelTexture, grid) {
   if (panels.length > MAX_PANELS) throw new Error("Too many visible glass panels");
   const count = panels.length;
   for (let i = 0; i < count; i++) {
-    const {x,y,halfWidth,halfHeight,radius}=panels[i];
+    const {halfWidth,halfHeight,radius}=panels[i];
+    const x=panels[i].x-origin.left,y=panels[i].y-origin.top;
     panelData.set([x*dpr,y*dpr,halfWidth*dpr,halfHeight*dpr],4*i);
-    const clip=panels[i].clip??{x:0,y:0,width:1e6,height:1e6};
+    const source=panels[i].clip;
+    const clip=source?{x:source.x-origin.left,y:source.y-origin.top,width:source.width,height:source.height}:{x:0,y:0,width:1e6,height:1e6};
     panelData.set([clip.x*dpr,clip.y*dpr,(clip.x+clip.width)*dpr,(clip.y+clip.height)*dpr],4*(MAX_PANELS+i));
     panelData[4*(2*MAX_PANELS+i)]=radius*dpr;
     const left=Math.max(0,x-halfWidth,clip.x),right=Math.min(gl.drawingBufferWidth/dpr,x+halfWidth,clip.x+clip.width);

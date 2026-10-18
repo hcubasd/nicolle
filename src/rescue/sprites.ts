@@ -17,3 +17,9 @@ export const sprites:Record<Species,{width:number;height:number;flying:boolean}>
 };
 export const animalAsset=(name:Species)=>`${import.meta.env.BASE_URL}grafos/animals/${name}.png`;
 export function animalStyle(name:Species):string {const s=sprites[name];return `background-image:url('${animalAsset(name)}');width:${s.width}px;height:${s.height}px`;}
+
+/** Decode every character before revealing the map, including later rescues. */
+export async function preloadSprites():Promise<void> {
+ const urls=[`${import.meta.env.BASE_URL}grafos/gunner02.png`,`${import.meta.env.BASE_URL}grafos/fairy01.png`,...Object.keys(sprites).map(name=>animalAsset(name as Species))];
+ await Promise.allSettled(urls.map(async url=>{const image=new Image();image.src=url;await image.decode();}));
+}

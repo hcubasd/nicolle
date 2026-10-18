@@ -9,6 +9,10 @@ export function createSession(count:number):Session {
  const graph=generateGraph(count,seed);
  session={graph,state:startAt(graph,0)};saveSession();return session;
 }
+export function clearSession():void {
+ session=undefined;
+ try {localStorage.removeItem(key);}catch{/* Storage is optional. */}
+}
 export function saveSession():void {
  if(!session)return;
  try {const {graph,state}=session;localStorage.setItem(key,JSON.stringify({count:graph.islands.length,seed:graph.seed,at:state.at,rescued:[...state.rescued],bought:[...state.bought],spent:state.spent,trail:session.trail}));}catch{/* Saving is optional. */}
