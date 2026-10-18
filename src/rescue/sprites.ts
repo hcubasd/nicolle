@@ -1,3 +1,4 @@
+import {spriteBounds} from './sprite-bounds';
 import type {Species} from './model';
 // Frame dimensions are native pixels: no scaling or smoothing of animal sheets.
 export const sprites:Record<Species,{width:number;height:number;flying:boolean}>={
@@ -16,7 +17,7 @@ export const sprites:Record<Species,{width:number;height:number;flying:boolean}>
  coelho:{width:32,height:32,flying:false},
 };
 export const animalAsset=(name:Species)=>`${import.meta.env.BASE_URL}grafos/animals/${name}.png`;
-export function animalStyle(name:Species):string {const s=sprites[name];return `background-image:url('${animalAsset(name)}');width:${s.width}px;height:${s.height}px`;}
+export function animalStyle(name:Species):string {const s=sprites[name],b=spriteBounds[name];return `background-image:url('${animalAsset(name)}');width:${s.width}px;height:${s.height}px;transform:translate(${s.width/2-(b.left+b.right)/2}px,${s.height/2-(b.top+b.bottom)/2}px)`;}
 
 /** Decode every character before revealing the map, including later rescues. */
 export async function preloadSprites():Promise<void> {

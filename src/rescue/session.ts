@@ -7,7 +7,7 @@ export function createSession(count:number):Session {
  count=Math.max(2,Math.min(128,count));
  const seed=crypto.getRandomValues(new Uint32Array(1))[0];
  const graph=generateGraph(count,seed);
- session={graph,state:startAt(graph,0)};saveSession();return session;
+ session={graph,state:startAt(graph,seed%graph.islands.length)};saveSession();return session;
 }
 export function clearSession():void {
  session=undefined;

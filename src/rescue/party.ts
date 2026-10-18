@@ -1,4 +1,5 @@
 import {TRAVEL_SPEED,type Island,type Species} from './model';
+import {spriteBounds} from './sprite-bounds';
 import {sprites} from './sprites';
 const asset=(animal:Species|'human')=>`${import.meta.env.BASE_URL}grafos/${animal==='human'?'gunner02.png':`animals/${animal}.png`}`;
 interface Point{x:number;y:number;d:number;}
@@ -8,9 +9,10 @@ export class Party {
  private actors:Actor[]=[];
  private distance=0;
  private lastFrame=0;
+ private startingCompanion:{x:number;y:number}|undefined;
  constructor(private root:HTMLElement,private reduced:()=>boolean){}
  reset(at:Island,rescued:Island[],saved?:Point[],purchased:{a:Island;b:Island}[]=[]):void {
-  this.root.replaceChildren();this.actors=[];this.distance=0;this.lastFrame=0;
+  this.root.replaceChildren();this.actors=[];this.distance=0;this.lastFrame=0;this.startingCompanion=undefined;
   // Start at the island, not on a synthetic line extending into empty water.
   this.trail=[{x:at.x,y:at.y+16,d:0}];
   if(saved&&saved.length>=2&&saved.every((p,i)=>Number.isFinite(p.x)&&Number.isFinite(p.y)&&Number.isFinite(p.d)&&(i===0||p.d>=saved[i-1].d))) {
@@ -24,8 +26,14 @@ export class Party {
     this.trail=saved.slice(first).map(p=>({...p}));this.distance=last.d;
    }
   }
+  // The initial companion stands beside the player, outside the trail state.
+  if(rescued.length===1&&purchased.length===0){
+   this.trail=[{x:at.x,y:at.y+16,d:0}];this.distance=0;
+   this.startingCompanion={x:at.x-40,y:at.y+16};
+  }
   this.add(-1,'human',false);
   for(const island of rescued)this.add(island.id,island.animal,false);
+  if(this.startingCompanion){const animal=this.actors[1];animal.lastX=this.startingCompanion.x;animal.lastY=this.startingCompanion.y;}
  }
  private add(id:number,animal:Species|'human',joining:boolean):void {
   const element=document.createElement('span');element.className=`traveler ${animal==='human'?'human':''}`;element.dataset.actor=String(id);element.style.backgroundImage=`url('${asset(animal)}')`;element.setAttribute('aria-hidden','true');this.root.append(element);
@@ -57,13 +65,23 @@ export class Party {
     if(Math.abs(desired-actor.pathDistance)<.001)actor.joining=false;
    }else {actor.pathDistance=desired;actor.joining=false;}
    // Both following and joining sample the traveled polyline; no diagonal blend.
-   const point=this.at(actor.pathDistance);
+   let point=this.at(actor.pathDistance);
+   if(i===1&&this.startingCompanion){
+    const companion=this.startingCompanion;
+    if(this.distance>0){
+     const dx=point.x-companion.x,dy=point.y-companion.y,distance=Math.hypot(dx,dy),step=this.reduced()?distance:TRAVEL_SPEED*dt/1000;
+     if(distance<=step){this.startingCompanion=undefined;}
+     else {companion.x+=dx/distance*step;companion.y+=dy/distance*step;}
+    }
+    if(this.startingCompanion)point=companion;
+   }
    const visible=point.x>camera.x-50&&point.x<camera.x+width+50&&point.y>camera.y-20&&point.y<camera.y+height+90;
    if(actor.visible!==visible){actor.element.hidden=!visible;actor.visible=visible;}
    const dx=point.x-actor.lastX,dy=point.y-actor.lastY,walking=Math.hypot(dx,dy)>.05&&!this.reduced();
    if(visible){const flying=actor.animal!=='human'&&sprites[actor.animal].flying,size=actor.animal==='human'?{width:40,height:60}:sprites[actor.animal];
+    const bounds=spriteBounds[actor.animal];
     const row=walking?(Math.abs(dx)>Math.abs(dy)?dx>0?2:1:dy>0?0:3):0,frame=(walking||flying)&&!this.reduced()?Math.floor(now/150)%4:0;
-    actor.element.style.transform=`translate(${point.x-size.width/2}px,${point.y-size.height}px)`;actor.element.style.backgroundPosition=`${-frame*size.width}px ${-row*size.height}px`;actor.element.style.zIndex=String(Math.round(point.y*10)+(actor.id===-1?1:0));
+    actor.element.style.transform=`translate(${point.x-(bounds.left+bounds.right)/2}px,${point.y-bounds.bottom}px)`;actor.element.style.backgroundPosition=`${-frame*size.width}px ${-row*size.height}px`;actor.element.style.zIndex=String(Math.round(point.y*10)+(actor.id===-1?1:0));
    }
    actor.lastX=point.x;actor.lastY=point.y;
   }

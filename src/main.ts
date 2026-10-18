@@ -39,13 +39,13 @@ function render():void {
  if(!route.startsWith('/grafos/prim')){clearSession();stopPrimMusic();}else startPrimMusic();
  app.className='';
  if(route==='/') {
-  document.title='Nicolle · Disciplinas';
+  document.title='Nicolle';
   app.innerHTML=`<main class="menu-screen"><span class="wordmark">Nicolle.</span><div class="menu-content"><h1>Disciplinas</h1><a class="picker-card glass" data-glass href="#/grafos"><span>Grafos</span><span class="picker-arrow" aria-hidden="true">→</span></a></div></main>`;
  } else if(route==='/grafos') {
-  document.title='Grafos · Nicolle';
+  document.title='Nicolle';
   app.innerHTML=`<main class="menu-screen"><a class="back-link glass" data-glass href="#/">← Disciplinas</a><div class="menu-content"><h1>Grafos</h1><a class="picker-card activity-card glass" data-glass href="#/grafos/prim"><span><strong>Prim</strong></span><span class="picker-arrow" aria-hidden="true">→</span></a></div></main>`;
  } else if(route==='/grafos/prim'||route==='/grafos/prim/jogo'||route==='/grafos/resgate'||route.startsWith('/grafos/kruskal/')||route==='/grafos/evento/jogo-kruskal') {
-  document.title='Prim · Nicolle';app.className='playing';cleanup=mountRescue(app,route==='/grafos/prim/jogo');
+  document.title='Nicolle';app.className='playing';cleanup=mountRescue(app,route==='/grafos/prim/jogo');
  } else {
   document.title='Nicolle';app.innerHTML=`<main class="menu-screen"><a class="back-link glass" data-glass href="#/">← Disciplinas</a><div class="menu-content"><h1>Vamos voltar?</h1><a class="picker-card glass" data-glass href="#/grafos"><span>Grafos</span><span aria-hidden="true">→</span></a></div></main>`;
  }
