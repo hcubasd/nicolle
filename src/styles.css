@@ -1,5 +1,5 @@
 *,*::before,*::after{box-sizing:border-box}
-:root{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-synthesis:none;color:#111;--paper:#e5d5e5;--radius:28px;background:var(--paper);color-scheme:light}
+:root{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-synthesis:none;-webkit-text-size-adjust:100%;text-size-adjust:100%;color:#111;--paper:#e5d5e5;--radius:28px;background:var(--paper);color-scheme:light}
 html,body{margin:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:none}
 button,input{font:inherit;color:inherit}button,a{-webkit-tap-highlight-color:transparent}button{cursor:pointer;touch-action:manipulation}button:disabled{cursor:default}a{color:inherit}button[hidden],[hidden]{display:none!important}
 #viewport{position:absolute;left:0;top:0;width:100vw;height:100dvh;overflow:hidden}
@@ -55,3 +55,36 @@ h2{font-size:24px;font-weight:550;letter-spacing:-.6px;line-height:1.25;margin:0
 @media(prefers-reduced-motion:reduce){.menu-fairy{animation:none}}
 .setup-screen{padding-top:max(112px,calc(env(safe-area-inset-top,0px) + 88px));padding-bottom:32px}
 .setup-card{margin-block:auto;flex-shrink:0}
+
+.python-menu-link{left:auto;right:max(clamp(24px,5vw,64px),calc(env(safe-area-inset-right,0px) + 16px))}
+.setup-card .resume-button{display:flex;align-items:center;justify-content:space-between;gap:20px;min-height:48px;padding:12px 0}
+.resume-button>span{font-size:20px}
+
+/* The document scrolls vertically; source lines scroll only horizontally. */
+.python-screen{height:100%;position:relative}
+.python-head .python-run{margin-left:auto}.python-head button:disabled{opacity:.45}
+.python-scroll{position:absolute;inset:calc(96px + env(safe-area-inset-top,0px)) 0 env(safe-area-inset-bottom,0px);overflow:auto;overflow-anchor:none;padding:36px max(24px,calc((100% - 1000px)/2)) 40px;mask-image:linear-gradient(to bottom,transparent,#000 36px);-webkit-mask-image:linear-gradient(to bottom,transparent,#000 36px)}
+.python-code-card,.python-explanation{padding:28px;min-width:0}
+.python-code-heading{display:flex;align-items:center;gap:20px;flex-wrap:wrap;margin-bottom:24px}
+.python-code-heading h1{font-size:25px;letter-spacing:-.6px;margin:0 auto 0 0}
+.python-code-heading a,.python-copy,.python-restart{font-size:14px;background:none;border:0;padding:8px 0;color:inherit}
+.python-code{border-radius:var(--radius);background:#000;color:var(--ansi-11);padding:18px 12px 18px 0;tab-size:4;overflow-x:auto;overflow-y:hidden}
+.python-code code{font:inherit}
+.python-code pre{margin:0;min-width:100%;width:max-content;font:13px/1.8 ui-monospace,SFMono-Regular,Consolas,monospace}
+.python-line{display:block;position:relative;min-height:1.8em;padding-left:54px;white-space:pre;overflow-wrap:normal}
+.line-number{position:absolute;left:0;top:0;text-align:right;user-select:none;width:38px;color:#888}
+.python-line.current-line{background:#ffffff24}
+.python-terminal{margin-top:28px;font:14px/1.7 ui-monospace,SFMono-Regular,Consolas,monospace;color:#111;overflow-wrap:anywhere}
+.python-output{white-space:pre-wrap;font:inherit;margin:0}.python-output:empty{display:none}
+.python-input{display:flex;flex-wrap:wrap;align-items:baseline;margin:0;font:inherit}
+.python-input label{white-space:pre-wrap;font:inherit}
+.python-input input{flex:1;min-width:8ch;width:12ch;border:0;background:transparent;border-radius:0;color:#111;font:inherit;font-size:16px;padding:0;outline:0;caret-color:#111}
+.python-explanation{margin-top:24px;font-size:14px;line-height:1.7}
+.python-explanation h2{font-size:22px;margin:8px 0 20px}
+.python-location{font:inherit;font-size:12px;color:#444;background:none;border:0;padding:0;text-align:left}
+.python-story p{margin:0 0 18px}.story-line{display:block;font-size:12px;color:#444;margin-bottom:3px}
+.story-note{color:#444;font-size:12px}.python-pending{margin-top:24px;font-weight:500}
+.python-history details{border-top:1px solid #0002;padding:14px 0}.python-history summary{cursor:pointer;font-size:12px;color:#444}.python-history details p{margin:14px 0}
+@media(max-width:700px){.python-scroll{padding:36px 16px 32px}.python-code-card,.python-explanation{padding:20px}.python-code-heading{gap:12px}.python-code-heading h1{font-size:22px}.python-head{gap:6px}.python-head>*{padding:0 12px}.python-code pre{font-size:12px}.python-line{padding-left:36px}.line-number{width:25px}.python-code{padding-right:8px}.python-explanation h2{font-size:20px}}
+
+.python-guide{font-size:14px;line-height:1.65;margin:0 0 24px}

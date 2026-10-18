@@ -19,7 +19,7 @@ export function setNavigationFrame(next?:((now:number)=>void)):void {navigationF
 export function setNavigationPan(x:number):void {navigation.x=x;dirty=true;}
 const panels:GlassPanel[]=[];
 const pool:GlassPanel[]=Array.from({length:160},()=>({x:0,y:0,halfWidth:0,halfHeight:0,radius:28}));
-const LIGHTNESS=87;
+export const LIGHTNESS=87;
 let frozenTime=performance.now();
 export const backgroundPan=()=>({...pan});
 export function setStage(next?:Stage):void {stage=next;dirty=true;}
@@ -40,7 +40,7 @@ function frame(now:number):void {
  const dt=Math.min(64,now-lastFrame);lastFrame=now;
  if(syncViewport())dirty=true;
  navigationFrame?.(now);
- const currentScroll=document.querySelector<HTMLElement>('#app .menu-screen, #app .setup-screen');
+ const currentScroll=document.querySelector<HTMLElement>('#app .menu-screen, #app .setup-screen, #app .python-scroll');
  if(currentScroll===scrollElement){const top=currentScroll?.scrollTop??0;if(top!==scrollTop){pan.y+=top-scrollTop;dirty=true;}scrollTop=top;}
  else {scrollElement=currentScroll;scrollTop=currentScroll?.scrollTop??0;}
  const view=stage?.(now,dt);
@@ -54,7 +54,12 @@ function frame(now:number):void {
   for(const el of document.querySelectorAll<HTMLElement>('[data-glass]')) {
    const rect=el.getBoundingClientRect();if(rect.width<=0||rect.height<=0||rect.bottom<canvasRect.top||rect.top>canvasRect.bottom||rect.right<canvasRect.left||rect.left>canvasRect.right)continue;
    const p=pool[panels.length];if(!p)throw Error('Visible glass capacity exceeded');
-   p.x=rect.left+rect.width/2;p.y=rect.top+rect.height/2;p.halfWidth=rect.width/2;p.halfHeight=rect.height/2;p.radius=Math.min(28,p.halfWidth,p.halfHeight);p.clip=undefined;panels.push(p);
+   p.x=rect.left+rect.width/2;p.y=rect.top+rect.height/2;p.halfWidth=rect.width/2;p.halfHeight=rect.height/2;p.radius=Math.min(28,p.halfWidth,p.halfHeight);p.clip=undefined;
+   if(el.hasAttribute('data-glass-clip')){
+    const bounds=el.closest('.python-scroll')?.getBoundingClientRect();
+    if(bounds)p.clip={x:bounds.left,y:bounds.top,width:bounds.width,height:bounds.height};
+   }
+   panels.push(p);
   }
   renderer?.draw(reduced.matches?frozenTime:now,{pan:{x:pan.x+navigation.x,y:pan.y},panels,glassLength:8*parseFloat(getComputedStyle(document.documentElement).fontSize)});
   dirty=false;lastDraw=now;
