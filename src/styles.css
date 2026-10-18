@@ -88,3 +88,13 @@ h2{font-size:24px;font-weight:550;letter-spacing:-.6px;line-height:1.25;margin:0
 @media(max-width:700px){.python-scroll{padding:36px 16px 32px}.python-code-card,.python-explanation{padding:20px}.python-code-heading{gap:12px}.python-code-heading h1{font-size:22px}.python-head{gap:6px}.python-head>*{padding:0 12px}.python-code pre{font-size:12px}.python-line{padding-left:36px}.line-number{width:25px}.python-code{padding-right:8px}.python-explanation h2{font-size:20px}}
 
 .python-guide{font-size:14px;line-height:1.65;margin:0 0 24px}
+
+.game-head .music-toggle{width:56px;height:56px;min-width:56px;flex:0 0 56px;padding:0;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.game-head .music-toggle svg{display:block;pointer-events:none}
+.game-head:not(.python-head) .music-toggle{margin-left:auto}
+.game-head .wallet,.python-head .python-run{margin-left:0}
+.python-head .music-toggle{margin-left:auto}
+.setup-head{top:max(24px,env(safe-area-inset-top));left:max(clamp(24px,5vw,64px),calc(env(safe-area-inset-left,0px) + 16px));right:max(clamp(24px,5vw,64px),calc(env(safe-area-inset-right,0px) + 16px))}
+.setup-head .python-menu-link{position:static}
+.step-short{display:none}
+@media(max-width:380px){.python-head .game-back{padding:0 12px}.python-head .step-wide{display:none}.python-head .step-short{display:inline}}

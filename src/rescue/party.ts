@@ -81,7 +81,10 @@ export class Party {
    if(visible){const flying=actor.animal!=='human'&&sprites[actor.animal].flying,size=actor.animal==='human'?{width:40,height:60}:sprites[actor.animal];
     const bounds=spriteBounds[actor.animal];
     const row=walking?(Math.abs(dx)>Math.abs(dy)?dx>0?2:1:dy>0?0:3):0,frame=(walking||flying)&&!this.reduced()?Math.floor(now/150)%4:0;
-    actor.element.style.transform=`translate(${point.x-(bounds.left+bounds.right)/2}px,${point.y-bounds.bottom}px)`;actor.element.style.backgroundPosition=`${-frame*size.width}px ${-row*size.height}px`;actor.element.style.zIndex=String(Math.round(point.y*10)+(actor.id===-1?1:0));
+    // Human frames are displayed at 40×60; their measured PNG frames are 32×48.
+    const human=actor.animal==='human',scaleX=human?size.width/32:1,scaleY=human?size.height/48:1;
+    const feetY=point.y-(human?16:0);
+    actor.element.style.transform=`translate(${point.x-(bounds.left+bounds.right)/2*scaleX}px,${feetY-bounds.bottom*scaleY}px)`;actor.element.style.backgroundPosition=`${-frame*size.width}px ${-row*size.height}px`;actor.element.style.zIndex=String(Math.round(feetY*10)+(actor.id===-1?1:0));
    }
    actor.lastX=point.x;actor.lastY=point.y;
   }
