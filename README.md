@@ -65,7 +65,7 @@ O exemplo espera inteiros válidos, usando `int(input(...))` diretamente. Entrad
 
 O Python roda de verdade em um Web Worker com Pyodide 0.29.2, carregado apenas ao executar. O build copia o runtime da dependência npm para o próprio site (aproximadamente 12 MB), sem depender de um CDN durante a execução. `src/python/prim.py` é o script independente; `public/grafos/python/instrument.py` acrescenta pausas à árvore sintática somente na execução acompanhada. O arquivo baixado não contém código de depuração. Os testes verificam que a versão acompanhada produz a mesma saída que o script original com a mesma sequência aleatória e entradas.
 
-Os blocos de código têm fundo preto. As 12 cores ANSI cromáticas são mapeadas pela API `mapColors` do Nicrainha na mesma luminosidade da interface. Saída, entradas e explicações permanecem sobre vidro com texto escuro.
+Os blocos de código têm fundo preto. As 12 cores ANSI cromáticas são mapeadas pela API `mapColors` do Nicrainha na luminosidade padrão da biblioteca (L* 73.9124), independente da interface em L* 87. Saída, entradas e explicações permanecem sobre vidro com texto escuro.
 
 ## Publicação
 

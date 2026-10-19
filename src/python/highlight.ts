@@ -1,8 +1,8 @@
 import {mapColors} from 'nicrainha';
-import {LIGHTNESS} from '../scene';
 // ANSI's six chromatic colors and their six bright counterparts; no grays.
 const ansi=[{r:170,g:0,b:0},{r:0,g:170,b:0},{r:170,g:85,b:0},{r:0,g:0,b:170},{r:170,g:0,b:170},{r:0,g:170,b:170},{r:255,g:85,b:85},{r:85,g:255,b:85},{r:255,g:255,b:85},{r:85,g:85,b:255},{r:255,g:85,b:255},{r:85,g:255,b:255}];
-const colors=mapColors(ansi,{lightness:LIGHTNESS});
+// Use Nicrainha's default lightness for syntax on black, independently of the scene.
+const colors=mapColors(ansi);
 export function applyCodeColors(element:HTMLElement):void {colors.forEach((c,i)=>element.style.setProperty(`--ansi-${i}`,`rgb(${c.r} ${c.g} ${c.b})`));}
 export const escape=(text:string)=>text.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
 export function highlight(line:string):string {
