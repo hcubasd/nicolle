@@ -1,74 +1,125 @@
+import 'nicrainha';
+import {generatePalettes} from 'nicrainha';
 import {syncViewport} from './viewport';
-import {createRenderer,type GlassPanel} from './engine/renderer.js';
-export type {GlassPanel};
-export interface StageView {pan:{x:number;y:number};panels:GlassPanel[];changed:boolean;}
-export type Stage=(now:number,dt:number)=>StageView;
-const canvas=document.querySelector<HTMLCanvasElement>('#background')!;
-const reduced=matchMedia('(prefers-reduced-motion: reduce)');
-let renderer:ReturnType<typeof createRenderer>|undefined,stage:Stage|undefined,raf=0,disposed=false;
-let lastFrame=performance.now(),lastDraw=-Infinity,dirty=true;
-const pan={x:0,y:0};
-const navigation={x:0,y:0};
-let scrollElement:HTMLElement|null=null,scrollTop=0;
-let lastStagePanels:GlassPanel[]=[],departingPanels:GlassPanel[]=[];
-export function snapshotStagePanels():GlassPanel[] {return lastStagePanels.map(p=>({...p,clip:p.clip?{...p.clip}:undefined}));}
-export function setDepartingPanels(panels:GlassPanel[]=[]):void {departingPanels=panels;dirty=true;}
-let navigationFrame:((now:number)=>void)|undefined;
-// Navigation runs before the stage and glass measurements, in the same frame.
-export function setNavigationFrame(next?:((now:number)=>void)):void {navigationFrame=next;dirty=true;}
-export function setNavigationPan(x:number):void {navigation.x=x;dirty=true;}
-const panels:GlassPanel[]=[];
-const pool:GlassPanel[]=Array.from({length:160},()=>({x:0,y:0,halfWidth:0,halfHeight:0,radius:28}));
+
+// The public components own WebGL, palettes, panel measurement and drawing.
+// This adapter only places our views and glass on their shared UI plane.
 export const LIGHTNESS=87;
-let frozenTime=performance.now();
-export const backgroundPan=()=>({...pan});
+export interface StageView {changed:boolean;}
+export type Stage=(now:number,dt:number)=>StageView;
+const background=document.querySelector('nicrainha-background')!;
+const app=document.querySelector<HTMLElement>('#app')!;
+const surface=document.createElement('div');surface.className='ui-surface';
+background.append(surface);surface.append(app);
+const glassLayer=document.createElement('div');glassLayer.className='glass-layer';surface.prepend(glassLayer);
+const panels=new Map<HTMLElement,HTMLElement>();
+let stage:Stage|undefined,navigationFrame:((now:number)=>void)|undefined;
+let lastFrame=performance.now(),raf=0,disposed=false,top=0,dirty=true;
+let scroller:HTMLElement|null=null,content:HTMLElement|null=null;
+const color=generatePalettes(1,{lightness:LIGHTNESS})[0][0];
+const paper=`rgb(${color.r} ${color.g} ${color.b})`;
+document.documentElement.style.setProperty('--paper',paper);
+document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')!.content=paper;
+background.lightness=LIGHTNESS;
 export function setStage(next?:Stage):void {stage=next;dirty=true;}
 export function invalidateScene():void {dirty=true;}
-function launch():void {
- try {
-  renderer?.dispose();renderer=createRenderer(canvas,LIGHTNESS);
-  document.documentElement.style.setProperty('--paper',renderer.themeColor);
-  document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')!.content=renderer.themeColor;
-  document.documentElement.classList.remove('no-webgl');
- }catch(error){renderer=undefined;document.documentElement.classList.add('no-webgl');console.warn('WebGL fallback:',error);}
- dirty=true;
+export function setNavigationFrame(next?:((now:number)=>void)):void {navigationFrame=next;dirty=true;}
+// Navigation moves view DOM in script. Nicrainha's background deliberately stays
+// in place, as documented, rather than restarting its random field per route.
+export function resetPageScroll():void {top=0;scroller=null;content=null;background.scrollTo(0,0);}
+export function pageScrollTop():number {return top;}
+export function scrollPageTo(value:number):void {background.scrollTo(0,value);}
+function prepareScroll():void {
+ const next=app.querySelector<HTMLElement>('.python-scroll,.setup-screen');
+ if(next===scroller)return;
+ scroller=next;content=null;top=0;
+ if(next?.classList.contains('python-scroll')){content=document.createElement('div');content.className='python-document';content.append(...Array.from(next.childNodes));next.append(content);}
+ else if(next)content=next.querySelector<HTMLElement>('.setup-card');
 }
-function lost(event:Event):void {event.preventDefault();renderer?.dispose();renderer=undefined;document.documentElement.classList.add('no-webgl');}
-function motion():void {frozenTime=performance.now();dirty=true;}
-function frame(now:number):void {
- if(disposed)return;
- const dt=Math.min(64,now-lastFrame);lastFrame=now;
- if(syncViewport())dirty=true;
- navigationFrame?.(now);
- const currentScroll=document.querySelector<HTMLElement>('#app .menu-screen, #app .setup-screen, #app .python-scroll');
- if(currentScroll===scrollElement){const top=currentScroll?.scrollTop??0;if(top!==scrollTop){pan.y+=top-scrollTop;dirty=true;}scrollTop=top;}
- else {scrollElement=currentScroll;scrollTop=currentScroll?.scrollTop??0;}
- const view=stage?.(now,dt);
- lastStagePanels=view?.panels??[];
- if(view){pan.x=view.pan.x;pan.y=view.pan.y;if(view.changed)dirty=true;}
- if(!document.hidden&&(dirty||(!reduced.matches&&now-lastDraw>=(renderer?.interval??16)-dt/2))) {
-  panels.length=0;
-  panels.push(...departingPanels);
-  if(view)for(const panel of view.panels)panels.push(panel);
-  const canvasRect=canvas.getBoundingClientRect();
-  for(const el of document.querySelectorAll<HTMLElement>('[data-glass]')) {
-   const rect=el.getBoundingClientRect();if(rect.width<=0||rect.height<=0||rect.bottom<canvasRect.top||rect.top>canvasRect.bottom||rect.right<canvasRect.left||rect.left>canvasRect.right)continue;
-   const p=pool[panels.length];if(!p)throw Error('Visible glass capacity exceeded');
-   p.x=rect.left+rect.width/2;p.y=rect.top+rect.height/2;p.halfWidth=rect.width/2;p.halfHeight=rect.height/2;p.radius=Math.min(28,p.halfWidth,p.halfHeight);p.clip=undefined;
-   if(el.hasAttribute('data-glass-clip')){
-    const bounds=el.closest('.python-scroll')?.getBoundingClientRect();
-    if(bounds)p.clip={x:bounds.left,y:bounds.top,width:bounds.width,height:bounds.height};
-   }
-   panels.push(p);
+function updateGlass():void {
+ const origin=surface.getBoundingClientRect();
+ const live=new Set<HTMLElement>();
+ for(const target of surface.querySelectorAll<HTMLElement>('[data-glass]')){
+  const rect=target.getBoundingClientRect();
+  let left=Math.max(rect.left,origin.left),right=Math.min(rect.right,origin.right),upper=Math.max(rect.top,origin.top),bottom=Math.min(rect.bottom,origin.bottom);
+  if(target.hasAttribute('data-glass-clip')){
+   const clip=target.closest('.python-scroll,.map-field')?.getBoundingClientRect();
+   if(clip){left=Math.max(left,clip.left);right=Math.min(right,clip.right);upper=Math.max(upper,clip.top);bottom=Math.min(bottom,clip.bottom);}
   }
-  renderer?.draw(reduced.matches?frozenTime:now,{pan:{x:pan.x+navigation.x,y:pan.y},panels,glassLength:8*parseFloat(getComputedStyle(document.documentElement).fontSize)});
-  dirty=false;lastDraw=now;
+  if(target.classList.contains('setup-card')){
+   const setup=target.closest<HTMLElement>('.setup-screen')!,bounds=setup.getBoundingClientRect();
+   upper=Math.max(upper,bounds.top+parseFloat(getComputedStyle(setup).paddingTop));
+  }
+  if(right<=left||bottom<=upper||target.hidden)continue;
+  live.add(target);
+  let glass=panels.get(target);
+  if(!glass){glass=document.createElement('nicrainha-glass');glass.setAttribute('aria-hidden','true');glassLayer.append(glass);panels.set(target,glass);}
+  // Panels clipped by the game/document viewport never bleed behind controls.
+  // The public component reads this ordinary CSS box and corner radius itself.
+  const radius=getComputedStyle(target).borderTopLeftRadius;
+  glass.style.cssText=`position:absolute;left:${left-origin.left}px;top:${upper-origin.top}px;width:${right-left}px;height:${bottom-upper}px;border-radius:${radius};`;
  }
- raf=requestAnimationFrame(frame);
+ for(const [target,glass] of panels)if(!live.has(target)){glass.remove();panels.delete(target);}
 }
-const resize=new ResizeObserver(invalidateScene);resize.observe(canvas);
-const mutations=new MutationObserver(invalidateScene);mutations.observe(document.querySelector('#app')!,{childList:true,subtree:true});
-window.addEventListener('resize',invalidateScene);window.addEventListener('orientationchange',invalidateScene);window.addEventListener('pageshow',invalidateScene);visualViewport?.addEventListener('resize',invalidateScene);visualViewport?.addEventListener('scroll',invalidateScene);document.addEventListener('visibilitychange',invalidateScene);document.addEventListener('scroll',invalidateScene,true);
-canvas.addEventListener('webglcontextlost',lost);canvas.addEventListener('webglcontextrestored',launch);reduced.addEventListener('change',motion);
-launch();raf=requestAnimationFrame(frame);
-if(import.meta.hot)import.meta.hot.dispose(()=>{disposed=true;cancelAnimationFrame(raf);setStage();renderer?.dispose();resize.disconnect();mutations.disconnect();window.removeEventListener('resize',invalidateScene);window.removeEventListener('orientationchange',invalidateScene);window.removeEventListener('pageshow',invalidateScene);visualViewport?.removeEventListener('resize',invalidateScene);visualViewport?.removeEventListener('scroll',invalidateScene);document.removeEventListener('visibilitychange',invalidateScene);document.removeEventListener('scroll',invalidateScene,true);canvas.removeEventListener('webglcontextlost',lost);canvas.removeEventListener('webglcontextrestored',launch);reduced.removeEventListener('change',motion);canvas.getContext('webgl2')?.getExtension('WEBGL_lose_context')?.loseContext();});
+function drawFrame():void {
+ const appliedPan={x:background.scrollLeft,y:background.scrollTop};
+ const now=performance.now(),dt=Math.min(64,now-lastFrame);lastFrame=now;
+ syncViewport();navigationFrame?.(now);prepareScroll();
+ // The component dispatches scroll before measuring/drawing glass. Move all
+ // application DOM here so both are committed in that same frame.
+ if(scroller&&content){
+  const max=Math.max(0,content.offsetHeight+parseFloat(getComputedStyle(scroller).paddingTop)+parseFloat(getComputedStyle(scroller).paddingBottom)-scroller.clientHeight);
+  top=Math.max(0,Math.min(max,background.scrollTop));
+  if(background.scrollLeft!==0||background.scrollTop!==top)background.scrollTo(0,top);
+  content.style.transform=`translateY(${-top}px)`;
+ }
+ surface.style.transform=`translate(${appliedPan.x}px,${appliedPan.y}px)`;
+ stage?.(now,dt);updateGlass();
+}
+background.addEventListener('scroll',drawFrame);
+// Ask for a frame through the public pan API, including while sprites move or a
+// menu transition runs. No separate renderer or private engine APIs are used.
+function heartbeat():void {
+ if(disposed)return;
+ if(syncViewport())dirty=true;
+ if(dirty||stage||navigationFrame){dirty=false;background.scrollTo(background.scrollLeft,background.scrollTop);}
+ raf=requestAnimationFrame(heartbeat);
+}
+const mutations=new MutationObserver(invalidateScene);mutations.observe(app,{childList:true,subtree:true,characterData:true});
+const resize=new ResizeObserver(invalidateScene);resize.observe(app);
+raf=requestAnimationFrame(heartbeat);
+let codeDrag:{id:number;x:number;y:number}|undefined;
+function localInteraction(event:Event):void {
+ const target=event.target as Element;
+ // The game camera is local. Documents and short setup screens use the
+ // official pan; the code block additionally supports horizontal movement.
+ const code=target.closest<HTMLElement>('.python-code');
+ if(code&&event instanceof PointerEvent&&event.pointerType!=='mouse'){codeDrag={id:event.pointerId,x:event.clientX,y:event.clientY};code.setPointerCapture(event.pointerId);}
+ if(code&&event instanceof WheelEvent&&!event.ctrlKey&&Math.abs(event.deltaY)>Math.abs(event.deltaX)&&!event.shiftKey){event.preventDefault();background.scrollBy(0,event.deltaY*(event.deltaMode===1?16:event.deltaMode===2?scroller?.clientHeight??1:1));}
+ if(!target.closest('#app .python-scroll,#app .setup-screen')||code)event.stopPropagation();
+}
+surface.addEventListener('pointerdown',localInteraction);
+surface.addEventListener('wheel',localInteraction,{passive:false});
+function codeMove(event:PointerEvent):void {
+ if(codeDrag?.id!==event.pointerId)return;
+ const code=(event.target as Element).closest<HTMLElement>('.python-code');if(!code)return;
+ const dx=event.clientX-codeDrag.x,dy=event.clientY-codeDrag.y;
+ if(Math.abs(dy)>Math.abs(dx))background.scrollBy(0,-dy);else code.scrollLeft-=dx;
+ codeDrag.x=event.clientX;codeDrag.y=event.clientY;
+}
+function codeRelease():void {codeDrag=undefined;}
+surface.addEventListener('pointermove',codeMove);surface.addEventListener('pointerup',codeRelease);surface.addEventListener('pointercancel',codeRelease);
+// Browser focus may scroll an overflow:hidden box to reveal the terminal.
+// Fold that movement into the public pan rather than leaving a second scroll.
+function focusScroll(event:Event):void {
+ if(scroller&&event.target===scroller&&scroller.scrollTop){const delta=scroller.scrollTop;scroller.scrollTop=0;scrollPageTo(top+delta);}
+}
+surface.addEventListener('scroll',focusScroll,true);
+function keyboardScroll(event:KeyboardEvent):void {
+ if(!scroller||(event.target as Element).closest('input,textarea,select,button,a,.python-code,[contenteditable]'))return;
+ const amount=scroller.clientHeight*.85;
+ const next=event.key==='PageDown'?top+amount:event.key==='PageUp'?top-amount:event.key==='ArrowDown'?top+48:event.key==='ArrowUp'?top-48:event.key==='Home'?0:event.key==='End'?Number.MAX_SAFE_INTEGER:undefined;
+ if(next!==undefined){event.preventDefault();scrollPageTo(next);}
+}
+window.addEventListener('keydown',keyboardScroll);
+if(import.meta.hot)import.meta.hot.dispose(()=>{disposed=true;cancelAnimationFrame(raf);mutations.disconnect();resize.disconnect();background.removeEventListener('scroll',drawFrame);surface.removeEventListener('pointerdown',localInteraction);surface.removeEventListener('wheel',localInteraction);surface.removeEventListener('scroll',focusScroll,true);surface.removeEventListener('pointermove',codeMove);surface.removeEventListener('pointerup',codeRelease);surface.removeEventListener('pointercancel',codeRelease);window.removeEventListener('keydown',keyboardScroll);surface.replaceWith(app);});

@@ -26,7 +26,7 @@ As rotas usam fragmentos de URL, funcionando diretamente no GitHub Pages. O tít
 ## Organização
 
 - `src/main.ts`: navegação entre disciplinas e atividades.
-- `src/scene.ts`, `src/engine/`: fundo animado e painéis de vidro, baseados no Nicrainha.
+- `src/scene.ts`: integração com os componentes oficiais de fundo e vidro do Nicrainha.
 - `src/viewport.ts`: alinhamento da interface e do canvas à área visível, incluindo Safari no celular.
 - `src/styles.css`: estilos compartilhados.
 - `src/rescue/`: atividade de Prim, incluindo modelo, interface, personagens, áudio e estado da partida.
@@ -35,7 +35,7 @@ As rotas usam fragmentos de URL, funcionando diretamente no GitHub Pages. O tít
 - `scripts/`: verificações e ferramentas de preparação de recursos.
 - `.github/workflows/pages.yml`: testes, build e publicação no GitHub Pages.
 
-A interface usa o motor visual dos exemplos do Nicrainha, com luminosidade fixa em L* 87, fundo Perlin e vidro refrativo. O canvas e a interface compartilham a mesma área visível; transições respeitam a preferência por movimento reduzido.
+A interface usa a API pública do Nicrainha 1.1: `<nicrainha-background lightness="87">` e `<nicrainha-glass>`. O pacote fornece o fundo Perlin, vidro refrativo, tabelas e renderização; não mantemos uma cópia do motor. A rolagem vertical do Python usa o pan oficial, com conteúdo e vidro atualizados no mesmo quadro. O canvas e a interface compartilham a mesma área visível; transições respeitam a preferência por movimento reduzido.
 
 ## Atividade atual: Prim
 

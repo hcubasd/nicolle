@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "delaunator": "^5.1.0",
-    "nicrainha": "^0.1.0",
+    "nicrainha": "^1.1.0",
     "pyodide": "^0.29.2"
   },
   "devDependencies": {

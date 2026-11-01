@@ -1,4 +1,4 @@
-import {backgroundPan,setStage,invalidateScene,type GlassPanel} from '../scene';
+import {setStage,invalidateScene} from '../scene';
 import {startAt,cheapestFrontier,prim,buy,islandMove,outcome,bridgeFlightRoute,TRAVEL_SPEED,type FlightPoint,type Bridge} from './model';
 import {session,createSession,saveSession,type Session} from './session';
 import {animalStyle,sprites,preloadSprites} from './sprites';
@@ -31,7 +31,7 @@ function mountReadyWorld(root:HTMLElement,round:Session):()=>void {
  root.innerHTML=`<section class="game-screen"><header class="game-head"><a class="game-back glass" data-glass href="${menuRoute}">Menu</a>${musicButton()}<div class="wallet glass" data-glass aria-label="Saldo restante"><img src="${asset('rupee')}" alt=""><strong id="remaining"></strong></div><div class="rescue-count glass" data-glass aria-label="Bichinhos resgatados"><span aria-hidden="true">♥</span><strong id="rescued"></strong></div></header>
  <div class="map-field" tabindex="0" role="region" aria-label="Mapa de Prim. Arraste para explorar ou use as setas."><div class="world" style="width:${graph.width}px;height:${graph.height}px"><svg class="bridges" width="${graph.width}" height="${graph.height}" viewBox="0 0 ${graph.width} ${graph.height}" aria-hidden="true">${graph.bridges.map(e=>`<path data-line="${e.id}" class="bridge" d="${line(e)}"/>`).join('')}</svg>
  ${graph.bridges.map(e=>{const p=middle(e);return `<span class="bridge-price" data-bridge="${e.id}" style="left:${p.x-22}px;top:${p.y-22}px" aria-label="Ponte de ${e.cost} pontos"><span>${e.cost}</span></span>`;}).join('')}
- ${graph.islands.map(i=>`<button type="button" class="island" data-island="${i.id}" style="left:${i.x-28}px;top:${i.y-28}px" aria-label="${i.animal}"><span class="animal-picture" style="${animalStyle(i.animal)}" aria-hidden="true"></span><span class="rescue-heart" aria-hidden="true">♥</span></button>`).join('')}
+ ${graph.islands.map(i=>`<button type="button" class="island" data-glass data-glass-clip data-island="${i.id}" style="left:${i.x-28}px;top:${i.y-28}px" aria-label="${i.animal}"><span class="animal-picture" style="${animalStyle(i.animal)}" aria-hidden="true"></span><span class="rescue-heart" aria-hidden="true">♥</span></button>`).join('')}
  <span class="prim-fairy" role="img" aria-label="Prim: próxima ponte mais barata" style="background-image:url('${asset('fairy01')}')"></span><div class="party-layer" aria-hidden="true"></div></div></div>
 <p id="game-status" class="sr-only" role="status" aria-live="polite"></p></section>`;
  const field=root.querySelector<HTMLElement>('.map-field')!,world=root.querySelector<HTMLElement>('.world')!,fairy=root.querySelector<HTMLElement>('.prim-fairy')!;
@@ -47,13 +47,11 @@ function mountReadyWorld(root:HTMLElement,round:Session):()=>void {
  let hintEdge:Bridge|undefined,changed=true,disposed=false;
  let velocity={x:0,y:0},drag:{id:number;x:number;y:number;startX:number;startY:number;moved:boolean;samples:{x:number;y:number;t:number}[]}|undefined;
  let suppressClick=false,finishTimer:ReturnType<typeof setTimeout>|undefined;
- const panePool:GlassPanel[]=Array.from({length:128},()=>({x:0,y:0,halfWidth:28,halfHeight:28,radius:28})),panels:GlassPanel[]=[];
- const view={pan:{x:0,y:0},panels,changed:true};
+ const view={changed:true};
  function clamp():void {camera.x=Math.max(-box.width/2,Math.min(graph.width-box.width/2,camera.x));camera.y=Math.max(-box.height/2,Math.min(graph.height-box.height/2,camera.y));}
  function center(x:number,y:number):void {camera.x=x-box.width/2;camera.y=y-box.height/2;clamp();velocity={x:0,y:0};changed=true;}
  hintEdge=cheapestFrontier(graph,round.state.rescued);
  center(point.x,point.y);
- const origin=backgroundPan(),anchor={x:origin.x-camera.x,y:origin.y-camera.y};
  const fairyPoint:FlightPoint={...(hintEdge?middle(hintEdge):point),edgeId:hintEdge?.id??-1};
  let fairyFlight:{points:FlightPoint[];index:number}|undefined;
  function update():void {
@@ -138,8 +136,7 @@ function mountReadyWorld(root:HTMLElement,round:Session):()=>void {
   if(pending){advance(now,dt);changed=true;}
   if(!drag&&(velocity.x||velocity.y)){const decay=Math.pow(.998,dt),travel=(decay-1)/Math.log(.998),x=camera.x,y=camera.y;camera.x+=velocity.x*travel;camera.y+=velocity.y*travel;clamp();velocity.x=camera.x===x?0:velocity.x*decay;velocity.y=camera.y===y?0:velocity.y*decay;if(Math.hypot(velocity.x,velocity.y)/-Math.log(.998)<.5/(devicePixelRatio||1))velocity={x:0,y:0};changed=true;}
   world.style.transform=`translate(${-camera.x}px,${-camera.y}px)`;
-  panels.length=0;const clip={x:box.left,y:box.top,width:box.width,height:box.height};
-  for(const island of graph.islands){const x=island.x-camera.x,y=island.y-camera.y,visible=x>-40&&x<box.width+40&&y>-40&&y<box.height+40;nodes[island.id].hidden=!visible;if(!visible)continue;const panel=panePool[panels.length];if(!panel)throw Error('Island visibility exceeds glass budget');panel.x=box.left+x;panel.y=box.top+y;panel.clip=clip;panels.push(panel);
+  for(const island of graph.islands){const x=island.x-camera.x,y=island.y-camera.y,visible=x>-40&&x<box.width+40&&y>-40&&y<box.height+40;nodes[island.id].hidden=!visible;if(!visible)continue;
    if(visible&&!round.state.rescued.has(island.id)){const sprite=nodes[island.id].querySelector<HTMLElement>('.animal-picture')!;sprite.style.backgroundPosition=`${(reduced.matches?0:Math.floor(now/150)%4)*-sprites[island.animal].width}px 0`;}
   }
   for(const edge of graph.bridges){const p=middle(edge);prices[edge.id].hidden=round.state.bought.has(edge.id)||p.x<camera.x-30||p.x>camera.x+box.width+30||p.y<camera.y-30||p.y>camera.y+box.height+30;}
@@ -154,7 +151,7 @@ function mountReadyWorld(root:HTMLElement,round:Session):()=>void {
   }
   if(hintEdge){fairy.style.transform=`translate(${fairyPoint.x-16}px,${fairyPoint.y-57}px)`;fairy.style.backgroundPosition=`${(reduced.matches?0:Math.floor(now/150)%4)*-32}px 0`;}
   party.draw(now,camera,box.width,box.height);
-  view.pan.x=anchor.x+camera.x;view.pan.y=anchor.y+camera.y;view.changed=changed;changed=false;return view;
+  view.changed=changed;changed=false;return view;
  });
  update();
  return()=>{disposed=true;clearTimeout(finishTimer);resize.disconnect();saveSession();setStage();root.removeEventListener('click',click);root.removeEventListener('pointerdown',freshPointer,true);field.removeEventListener('pointerdown',down);field.removeEventListener('pointermove',move);field.removeEventListener('pointerup',release);field.removeEventListener('pointercancel',release);field.removeEventListener('wheel',wheel);field.removeEventListener('keydown',keyboard);};

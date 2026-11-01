@@ -1,3 +1,2 @@
-import { defineConfig } from 'vite';
-import { tables } from './scripts/tables.js';
-export default defineConfig({base:'./', plugins:[tables()]});
+import {defineConfig} from 'vite';
+export default defineConfig({base:'./'});
