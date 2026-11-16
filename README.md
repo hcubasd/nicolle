@@ -2,7 +2,7 @@
 
 [Site de estudos de Nicolle](https://hcubasd.github.io/nicolle/), com disciplinas, atividades e materiais adicionados progressivamente ao longo da graduação. A página inicial organiza o acesso por disciplina; cada disciplina reúne suas próprias atividades.
 
-Atualmente, o site contém **Grafos → Prim**, um jogo de resgate de bichinhos. Novas disciplinas, exercícios, jogos e materiais podem ser incorporados à mesma estrutura.
+Atualmente, Grafos reúne **Prim** e **Fluxos máximos**, dois jogos com personagens e redes. Novas disciplinas, exercícios, jogos e materiais podem ser incorporados à mesma estrutura.
 
 ## Desenvolvimento
 
@@ -30,6 +30,7 @@ As rotas usam fragmentos de URL, funcionando diretamente no GitHub Pages. O tít
 - `src/viewport.ts`: alinhamento da interface e do canvas à área visível, incluindo Safari no celular.
 - `src/styles.css`: estilos compartilhados.
 - `src/rescue/`: atividade de Prim, incluindo modelo, interface, personagens, áudio e estado da partida.
+- `src/flow/`: jogo de fluxo máximo, capacidades residuais e solver para calcular a meta.
 - `src/python/`: script de terminal e acompanhamento interativo da execução em Python.
 - `public/`: recursos estáticos publicados com o site.
 - `scripts/`: verificações e ferramentas de preparação de recursos.
@@ -76,3 +77,9 @@ Um push em `main` executa o workflow do GitHub Actions: instala dependências, r
 A atribuição do Nicrainha está em `LICENSES/nicrainha.txt`. Os avisos de Delaunator e robust-predicates estão em `public/licenses/`. Personagens, ícones e efeitos sonoros foram preparados a partir dos recursos fornecidos para o projeto.
 
 O efeito de clique usa `public/grafos/audio/system01.wav`. A música de Prim está em `public/grafos/audio/prim.m4a`, extraída do vídeo fornecido sem recodificar o áudio. Somente os recursos usados no site são incluídos na publicação. As licenças do runtime estão em `public/licenses/pyodide.txt` e `public/licenses/cpython.txt`; seu código-fonte está em https://github.com/pyodide/pyodide/tree/0.29.2.
+
+## Fluxos máximos
+
+Em **Grafos → Fluxos máximos**, uma rede fixa de dez ilhas permite escolher rotas da Origem ao Destino. Caminhar e desfazer passos não alteram capacidades. Ao completar uma rota, seu gargalo determina quantos bichinhos atravessam; cada chegada acrescenta uma unidade ao fluxo e atualiza todas as capacidades da rota. O retorno automático do jogador é gratuito.
+
+Setas contínuas são ligações originais; setas tracejadas são opções virtuais para cancelar fluxo anterior. Não são criadas novas ilhas. A meta é calculada por um solver de fluxo máximo com BFS, em uma cópia independente da rede. O jogador substitui a busca de caminhos durante a partida e vence quando alcança essa meta. É possível arrastar o mapa, usar as setas do teclado e localizar o jogador com **Ver jogador**. Esta atividade não inclui uma página Python.

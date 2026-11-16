@@ -1,5 +1,6 @@
 import './styles.css';
 import {setStage,invalidateScene,setNavigationFrame,resetPageScroll} from './scene';
+import {mountFlow} from './flow/game';
 import {mountPython} from './python/view';
 import {mountRescue} from './rescue/game';
 import {startPrimMusic,stopPrimMusic} from './rescue/sound';
@@ -8,7 +9,7 @@ import {outcome} from './rescue/model';
 const app=document.querySelector<HTMLElement>('#app')!;
 let cleanup:(()=>void)|undefined;
 let previousDepth:number|undefined,finishTransition:(()=>void)|undefined;
-const depth=(route:string)=>route==='/'?0:route==='/grafos'?1:(route==='/grafos/prim/jogo'||route==='/grafos/prim/python')?3:2;
+const depth=(route:string)=>route==='/'?0:route==='/grafos'?1:(route==='/grafos/prim/jogo'||route==='/grafos/prim/python'||route==='/grafos/fluxos/jogo')?3:2;
 // CSS `ease`: cubic-bezier(.25, .1, .25, 1). Solve x(u)=time,
 // then evaluate y(u); evaluating y(time) alone is not the CSS curve.
 function ease(time:number):number {
@@ -43,7 +44,9 @@ function render():void {
   app.innerHTML=`<main class="menu-screen"><span class="wordmark">Nicolle.</span><div class="menu-content"><h1>Disciplinas</h1><a class="picker-card glass" data-glass href="#/grafos"><span>Grafos</span><span class="picker-arrow" aria-hidden="true">→</span></a></div></main>`;
  } else if(route==='/grafos') {
   document.title='Nicolle';
-  app.innerHTML=`<main class="menu-screen"><a class="back-link glass" data-glass href="#/">← Disciplinas</a><div class="menu-content"><h1>Grafos</h1><a class="picker-card activity-card glass" data-glass href="#/grafos/prim"><span><strong>Prim</strong></span><span class="picker-arrow" aria-hidden="true">→</span></a></div></main>`;
+  app.innerHTML=`<main class="menu-screen"><a class="back-link glass" data-glass href="#/">← Disciplinas</a><div class="menu-content"><h1>Grafos</h1><a class="picker-card activity-card glass" data-glass href="#/grafos/prim"><span><strong>Prim</strong></span><span class="picker-arrow" aria-hidden="true">→</span></a><a class="picker-card activity-card glass" data-glass href="#/grafos/fluxos"><span>Fluxos máximos</span><span class="picker-arrow" aria-hidden="true">→</span></a></div></main>`;
+ } else if(route==='/grafos/fluxos'||route==='/grafos/fluxos/jogo') {
+  document.title='Nicolle';cleanup=mountFlow(app,route.endsWith('/jogo'));
  } else if(route==='/grafos/prim/python') {
   document.title='Nicolle';cleanup=mountPython(app);
  } else if(route==='/grafos/prim'||route==='/grafos/prim/jogo'||route==='/grafos/resgate'||route.startsWith('/grafos/kruskal/')||route==='/grafos/evento/jogo-kruskal') {

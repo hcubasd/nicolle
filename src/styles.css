@@ -111,3 +111,31 @@ h2{font-size:24px;font-weight:550;letter-spacing:-.6px;line-height:1.25;margin:0
 .python-code{touch-action:none;user-select:text}
 
 .setup-screen{overflow:hidden;touch-action:none}
+
+.activity-card+.activity-card{margin-top:20px}
+.flow-instructions{font-size:14px;line-height:1.65;margin:0 0 18px}
+.flow-instructions:last-of-type{margin-bottom:0}
+a.begin-button{text-decoration:none}
+.flow-head .flow-score{margin-left:auto;font-variant-numeric:tabular-nums}
+.flow-head>*{padding-inline:20px}
+.flow-map{height:calc(100% - 196px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));mask-image:linear-gradient(to bottom,transparent,#000 24px,#000 calc(100% - 20px),transparent);-webkit-mask-image:linear-gradient(to bottom,transparent,#000 24px,#000 calc(100% - 20px),transparent)}
+.flow-world{isolation:isolate}
+.flow-island{font-size:16px;font-weight:550}
+.flow-island:disabled{opacity:1;cursor:grab}
+.flow-island.flow-available{outline:1px solid #0009;outline-offset:4px;cursor:pointer}
+.flow-island.flow-current{outline:2px solid #000;outline-offset:4px}
+.flow-node-name{position:absolute;transform:translateX(-50%);font-size:12px;pointer-events:none}
+.flow-edge{fill:none;stroke:#111;stroke-width:1.25;opacity:.45}
+.flow-edge.flow-reverse{stroke-dasharray:4 5}
+.flow-edge.flow-available-edge{opacity:1;stroke-width:1.75}
+.flow-edge.flow-selected{opacity:1;stroke-width:2.5}
+.flow-capacity{position:absolute;transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;width:25px;height:25px;border-radius:50%;background:#111;color:white;font-size:12px;font-variant-numeric:tabular-nums;pointer-events:none;z-index:2}
+.flow-reverse-capacity{background:#fff;color:#111;border:1px dashed #111}
+.flow-note{position:absolute;left:24px;right:24px;bottom:max(16px,env(safe-area-inset-bottom));min-height:72px;padding:16px 20px;display:flex;align-items:center;gap:20px;font-size:13px;line-height:1.5}
+.flow-note p{margin:0}.flow-route{font-size:12px;opacity:.7;margin-top:4px!important;overflow-wrap:anywhere}
+.flow-note>div{min-width:0;flex:1}
+.flow-locate{flex:none;align-self:center;min-height:44px;padding:4px 0;background:none;border:0;text-decoration:underline;text-underline-offset:3px;font-size:13px}
+.flow-victory{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(480px,calc(100% - 48px));padding:32px;z-index:10;font-size:14px;line-height:1.65}
+.flow-victory h1{font-size:32px;margin-bottom:20px}
+@media(max-width:600px){.flow-head>*{padding-inline:16px}.flow-note{left:16px;right:16px;padding:14px 18px;gap:12px}.flow-note,.flow-locate{font-size:12px}.flow-note .flow-route{font-size:11px}.flow-map{height:calc(100% - 214px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))}}
+@media(max-height:480px){.flow-map{height:calc(100% - 184px - env(safe-area-inset-bottom,0px))}.flow-note{bottom:8px;padding-block:8px;min-height:60px}.flow-victory{padding:20px}.flow-victory h1{margin-bottom:8px}.flow-victory p{margin:6px 0}.flow-victory .begin-button{margin-top:12px}}

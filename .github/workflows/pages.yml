@@ -25,7 +25,7 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
-      - name: Verify Prim and generated rescue maps
+      - name: Verify graph games and Python execution
         run: npm test
       - name: Build site
         run: npm run build
