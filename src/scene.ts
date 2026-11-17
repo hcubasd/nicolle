@@ -26,15 +26,17 @@ export function invalidateScene():void {dirty=true;}
 export function setNavigationFrame(next?:((now:number)=>void)):void {navigationFrame=next;dirty=true;}
 // Navigation moves view DOM in script. Nicrainha's background deliberately stays
 // in place, as documented, rather than restarting its random field per route.
-export function resetPageScroll():void {top=0;scroller=null;content=null;background.scrollTo(0,0);}
+export function resetPageScroll():void {if(content)resize.unobserve(content);top=0;scroller=null;content=null;background.scrollTo(0,0);}
 export function pageScrollTop():number {return top;}
 export function scrollPageTo(value:number):void {background.scrollTo(0,value);}
 function prepareScroll():void {
  const next=app.querySelector<HTMLElement>('.python-scroll,.setup-screen');
  if(next===scroller)return;
+ if(content)resize.unobserve(content);
  scroller=next;content=null;top=0;
  if(next?.classList.contains('python-scroll')){content=document.createElement('div');content.className='python-document';content.append(...Array.from(next.childNodes));next.append(content);}
  else if(next)content=next.querySelector<HTMLElement>('.setup-card');
+ if(content)resize.observe(content);
 }
 function updateGlass():void {
  const origin=surface.getBoundingClientRect();
@@ -85,7 +87,7 @@ function heartbeat():void {
  if(dirty||stage||navigationFrame){dirty=false;background.scrollTo(background.scrollLeft,background.scrollTop);}
  raf=requestAnimationFrame(heartbeat);
 }
-const mutations=new MutationObserver(invalidateScene);mutations.observe(app,{childList:true,subtree:true,characterData:true});
+const mutations=new MutationObserver(invalidateScene);mutations.observe(app,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['open','hidden','class','aria-expanded']});
 const resize=new ResizeObserver(invalidateScene);resize.observe(app);
 raf=requestAnimationFrame(heartbeat);
 let codeDrag:{id:number;x:number;y:number}|undefined;

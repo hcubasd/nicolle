@@ -7,17 +7,19 @@
     "dev": "vite --host 0.0.0.0 --port 5173 --strictPort",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --host 0.0.0.0 --port 4173 --strictPort",
-    "test": "node scripts/check-prim.mjs && node scripts/check-flow.mjs && python3 scripts/check-python.py",
+    "test": "node scripts/check-prim.mjs && node scripts/check-flow.mjs && node scripts/check-electricity.mjs && python3 scripts/check-python.py",
     "predev": "node scripts/prepare-python.mjs",
     "prebuild": "node scripts/prepare-python.mjs"
   },
   "dependencies": {
     "delaunator": "^5.1.0",
+    "katex": "^0.19.1",
     "nicrainha": "^1.1.0",
     "pyodide": "^0.29.2"
   },
   "devDependencies": {
     "@types/delaunator": "^5.0.3",
+    "@types/katex": "^0.16.8",
     "typescript": "^6.0.3",
     "vite": "^8.3.1"
   },

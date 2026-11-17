@@ -2,7 +2,7 @@
 
 [Site de estudos de Nicolle](https://hcubasd.github.io/nicolle/), com disciplinas, atividades e materiais adicionados progressivamente ao longo da graduação. A página inicial organiza o acesso por disciplina; cada disciplina reúne suas próprias atividades.
 
-Atualmente, Grafos reúne **Prim** e **Fluxos máximos**, dois jogos com personagens e redes. Novas disciplinas, exercícios, jogos e materiais podem ser incorporados à mesma estrutura.
+Atualmente, Grafos reúne **Prim** e **Fluxos máximos**. Eletricidade Aplicada contém uma revisão gamificada da **prova 2**. Novas disciplinas, exercícios, jogos e materiais podem ser incorporados à mesma estrutura.
 
 ## Desenvolvimento
 
@@ -30,6 +30,7 @@ As rotas usam fragmentos de URL, funcionando diretamente no GitHub Pages. O tít
 - `src/viewport.ts`: alinhamento da interface e do canvas à área visível, incluindo Safari no celular.
 - `src/styles.css`: estilos compartilhados.
 - `src/rescue/`: atividade de Prim, incluindo modelo, interface, personagens, áudio e estado da partida.
+- `src/electricity/`: revisão da prova 2 de Eletricidade Aplicada, com conteúdo, laboratórios, desafios e progresso.
 - `src/flow/`: jogo de fluxo máximo, capacidades residuais e solver para calcular a meta.
 - `src/python/`: script de terminal e acompanhamento interativo da execução em Python.
 - `public/`: recursos estáticos publicados com o site.
@@ -83,3 +84,9 @@ O efeito de clique usa `public/grafos/audio/system01.wav`. A música de Prim est
 Em **Grafos → Fluxos máximos**, uma rede fixa de dez ilhas permite escolher rotas da Origem ao Destino. Caminhar e desfazer passos não alteram capacidades. Ao completar uma rota, seu gargalo determina quantos bichinhos atravessam; cada chegada acrescenta uma unidade ao fluxo e atualiza todas as capacidades da rota. O retorno automático do jogador é gratuito.
 
 Setas contínuas são ligações originais; setas tracejadas são opções virtuais para cancelar fluxo anterior. Não são criadas novas ilhas. A meta é calculada por um solver de fluxo máximo com BFS, em uma cópia independente da rede. O jogador substitui a busca de caminhos durante a partida e vence quando alcança essa meta. É possível arrastar o mapa, usar as setas do teclado e localizar o jogador com **Ver jogador**. Esta atividade não inclui uma página Python.
+
+## Eletricidade Aplicada — prova 2
+
+A revisão em `#/eletricidade/prova-2` usa apenas o intervalo do cronograma depois da primeira avaliação e antes da segunda, prevista em 18/11/2026. São 13 missões e 69 desafios sobre regime senoidal, análise em CA, potência, geração/transmissão/distribuição, trifásicos e medidas. Há exemplos resolvidos, diagramas, experiências interativas, XP, progresso local, revisão de dificuldades e um simulado autoral sem dicas antes da entrega.
+
+O material fornecido traz a Aula 08 para a análise de circuitos. Os blocos sem slides específicos são claramente identificados como complementos autorais, com fontes. O recorte, as limitações e a correção de uma inconsistência numérica da p. 23 estão em [src/electricity/README.md](src/electricity/README.md) e no próprio jogo. Os arquivos completos do semestre não são publicados.
