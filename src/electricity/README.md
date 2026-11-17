@@ -23,15 +23,25 @@ As fontes externas usadas para complementar lacunas estão também acessíveis n
 ## Mecânica e estrutura
 
 - 13 missões, 69 desafios; todos os setores disponíveis desde o início.
-- Explicações graduais, exemplos resolvidos, diagramas de circuito e laboratórios interativos.
+- A montagem é a atividade principal: fasores arrastáveis, substituição de peças RLC, percurso de malhas, equilíbrio de nós/supermalhas/supernós, sensor de fonte dependente, casamento de carga, banco de capacitores, transformadores, fios Y/Δ e pontas de multímetro. As leituras são calculadas a partir das ações; não há sliders genéricos.
+- Explicações e os 69 exercícios ficam em painéis opcionais de apoio, depois da montagem.
+- +100 XP pela primeira conclusão prática de cada missão. Repetir não gera XP adicional.
 - 15 XP por primeiro acerto sem ajuda, 10 com dica/resolução; repetir não gera XP adicional.
 - Erros não retiram pontos. Questões com ajuda permanecem em “Pontos frágeis” até acerto independente.
-- Cada missão completa energiza um setor do campus.
+- Cada montagem prática concluída energiza um setor do campus. O progresso dos exercícios antigos é preservado separadamente.
 - Simulado autoral sorteia uma questão por missão, sem limite de tempo e sem soluções antes da entrega.
 - Progresso opcional em localStorage, chave `nicolle-eletricidade-prova2-v1`; navegar não o apaga.
 - Inputs numéricos aceitam ponto/vírgula, têm envio visível e botão ± para teclados móveis sem sinal negativo.
 - O fundo e o vidro continuam sendo os componentes oficiais do Nicrainha, L* 87.
 
-`content.ts`: material e banco de perguntas. `math.ts`: cálculos e avaliação numérica. `labs.ts`: diagramas e experiências. `progress.ts`: progresso. `view.ts`: interface. `review.css`: apresentação.
+`content.ts`: material e banco de perguntas. `math.ts`: cálculos e avaliação numérica. `labs.ts`: diagramas de referência. `physics.ts`: modelos elétricos. `workbench.ts`: manipulação e objetivos das montagens. `progress.ts`: progresso. `view.ts`: interface. `review.css`: apresentação.
 
 `npm test` verifica o banco, todas as fórmulas TeX, exemplos complexos da aula recalculados independentemente, relações Y/Δ, entrada numérica e persistência/XP. Os fluxos completos de aprendizado e simulado foram também exercitados em Chromium e WebKit, incluindo input decimal em português, repetição sem XP extra, dificuldades, recarga e layout móvel.
+
+## Modelos das experiências
+
+Os modelos são pequenos e explícitos, não um simulador geral de circuitos. O nó em CA e a fonte dependente usam impedâncias complexas da Aula 08. A fonte controlada é recalculada por um sistema complexo 2×2, incluindo o ramo de controle que o jogador escolheu. Supermalha e supernó começam com fasores reais para visualizar duas restrições simultâneas.
+
+As montagens trifásicas resolvem cada ramo ligado pelo jogador, inclusive ligações mistas, abertas ou no próprio terminal; correntes de linha e neutro vêm da soma fasorial. A transmissão usa transformadores ideais e resistência de linha/carga e conserva potência entre entrada, carga e perdas. O multímetro é um modelo de 12 V e quatro terminais: polaridade, intervalo em série, abertura e curto são tratados; desligar desconecta a fonte. Não há simulação de transitórios ou de instalação real.
+
+Os testes novos verificam as equações, conservação de energia, 125 montagens trifásicas e leituras do medidor. Os testes de navegador completam as 13 experiências com cliques e arrastes reais, incluindo teclado/ajuste fino e persistência de +100 XP sem repetição.

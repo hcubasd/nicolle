@@ -24,8 +24,8 @@ const v1=div(c(20),c(1,-1/3)),v2=mul(c(-11/15),v1),ix=div(v1,c(0,-2.5));near(v1.
 const y=math.threePhase(220,10,false),d=math.threePhase(220,10,true);near(d.lineCurrent/y.lineCurrent,3);near(d.power/y.power,3);near(y.power,3*y.phaseVoltage*y.phaseCurrent*.8);
 const z=math.series(50,20,.1,.0001);near(z.xl,10*Math.PI);near(z.xc,100/Math.PI);
 let stored='';globalThis.localStorage={getItem:()=>stored,setItem:(_,v)=>{stored=v;}};
-const {readProgress,saveProgress,markAnswer}=await load('progress',{"'./content'":JSON.stringify(contentUrl)});
+const {readProgress,saveProgress,markAnswer,markExperiment}=await load('progress',{"'./content'":JSON.stringify(contentUrl)});
 let p=readProgress();markAnswer(p,'s1',false);assert(p.missed.includes('s1'));markAnswer(p,'s1',true,true);assert.equal(p.xp,10);assert(p.missed.includes('s1'));markAnswer(p,'s1',true,false);assert.equal(p.xp,10);assert(!p.missed.includes('s1'));markAnswer(p,'s2',true);assert.equal(p.xp,25);assert.equal(p.solved.length,2);assert.deepEqual(readProgress(),p);
-markAnswer(p,'not-a-question',true);assert.equal(p.solved.length,2);
+markAnswer(p,'not-a-question',true);assert.equal(p.solved.length,2);markExperiment(p,'sinais');assert.equal(p.xp,125);markExperiment(p,'sinais');assert.equal(p.xp,125);assert.deepEqual(readProgress().experiments,['sinais']);
 stored='{bad json';assert.equal(readProgress().xp,0);stored=JSON.stringify({solved:['s1','s1','bad'],seen:['sinais','bad'],missed:[],xp:15});assert.deepEqual(readProgress().solved,['s1']);assert.deepEqual(readProgress().seen,['sinais']);
 console.log(`Electricity: 13 missions, 69 graded challenges, ${formulaCount} valid formulas, independent source-example calculations, Y/Δ comparisons, decimal input, persistent progress, hint/retry scoring and no XP farming passed.`);

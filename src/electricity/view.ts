@@ -3,10 +3,10 @@ import './review.css';
 import katex from 'katex';
 import {mapColors} from 'nicrainha';
 import {missions,allQuestions,questionMission,type Mission,type Question} from './content';
-import {readProgress,saveProgress,markAnswer,type Progress} from './progress';
+import {readProgress,saveProgress,markAnswer,markExperiment,type Progress} from './progress';
 import {parseAnswer,isCorrect} from './math';
 import {sprites} from '../rescue/sprites';
-import {labMarkup,mountLab} from './labs';
+import {workbenchMarkup,mountWorkbench} from './workbench';
 import {invalidateScene,scrollPageTo,pageScrollTop} from '../scene';
 const base='#/eletricidade/prova-2';
 const esc=(s:string)=>s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
@@ -16,12 +16,13 @@ export function rich(text:string):string {
  return html+esc(text.slice(last));
 }
 const picture=(animal:string)=>{const size=sprites[animal as keyof typeof sprites];return `<span class="review-animal" aria-hidden="true" style="width:${size.width}px;height:${size.height}px;--animal-cycle:-${size.width*4}px;background-image:url('${import.meta.env.BASE_URL}grafos/animals/${animal}.png')"></span>`;};
-const completed=(p:Progress,m:Mission)=>m.questions.every(q=>p.solved.includes(q.id));
+const completed=(p:Progress,m:Mission)=>p.experiments.includes(m.id);
 const title=(text:string)=>{document.title='Nicolle';return text;};
 function shell(root:HTMLElement,back:string,label:string,p:Progress,content:string):void {
  root.innerHTML=`<section class="python-screen review-screen"><header class="game-head review-head"><a class="glass" data-glass href="${back}">← ${label}</a><span class="glass review-wallet" data-glass><strong data-review-xp>${p.xp} XP</strong></span></header><main class="python-scroll review-scroll">${content}</main></section>`;
  const colors=mapColors([{r:0,g:180,b:80},{r:255,g:180,b:0},{r:200,g:100,b:255}]);
  colors.forEach((c,i)=>root.style.setProperty(`--review-color-${i}`,`rgb(${c.r} ${c.g} ${c.b})`));
+ const wires=mapColors([{r:200,g:0,b:35},{r:0,g:50,b:200}],{lightness:40});wires.forEach((c,i)=>root.style.setProperty(`--review-wire-${i}`,`rgb(${c.r} ${c.g} ${c.b})`));
  const pane=root.querySelector<HTMLElement>('.review-scroll')!;
  pane.addEventListener('click',event=>{
   const button=(event.target as Element).closest('[data-toggle-sign]');if(!button)return;
@@ -69,11 +70,11 @@ function hub(root:HTMLElement,p:Progress):()=>void {
  const now=new Date(),today=new Date(now.getFullYear(),now.getMonth(),now.getDate()),exam=new Date(2026,10,18),days=Math.round((exam.getTime()-today.getTime())/86400000);
  const date=days===1?'Amanhã, 18/11':days===0?'Hoje, 18/11':days>1?`18/11 · faltam ${days} dias`:'18/11/2026';
  shell(root,'#/eletricidade','Eletricidade',p,
-  card(`<div class="review-hero-heading">${picture('gato')}<div><p class="review-eyebrow">Eletricidade Aplicada · ${date} · prevista no plano</p><h1>${title('Prova 2')}</h1></div></div><p class="review-intro">Reacenda os ${missions.length} setores do campus. Em cada missão, entenda o circuito, experimente e resolva os desafios. Errar não tira vidas: a resolução mostra como corrigir o raciocínio.</p>${campus(p)}<div class="review-progress-label"><strong>${total} / ${allQuestions.length} desafios</strong><span>${done} / ${missions.length} setores</span></div><progress value="${total}" max="${allQuestions.length}" aria-label="Desafios concluídos"></progress>${done===missions.length?'<p class="review-celebration">Campus energizado! Agora tente o simulado sem consultar as dicas.</p>':''}<div class="review-actions"><a class="review-action" href="${base}/simulado">Simulado · ${missions.length} questões →</a><a class="review-action" href="${base}/treino">Rever pontos frágeis${p.missed.length?` · ${p.missed.length}`:''} →</a></div><p class="review-caption">Progresso salvo neste navegador. Todas as missões estão disponíveis: siga a ordem ou escolha o assunto de que mais precisa.</p>`),
+  card(`<div class="review-hero-heading">${picture('gato')}<div><p class="review-eyebrow">Eletricidade Aplicada · ${date} · prevista no plano</p><h1>${title('Prova 2')}</h1></div></div><p class="review-intro">Reacenda os ${missions.length} setores do campus. Em cada missão, manipule a montagem até fazê-la funcionar: arraste fasores, conecte fios, percorra malhas e coloque as pontas do multímetro. As leituras mudam com suas ações.</p>${campus(p)}<div class="review-progress-label"><strong>${done} / ${missions.length} montagens concluídas</strong><span>${total} exercícios de prova resolvidos</span></div><progress value="${done}" max="${missions.length}" aria-label="Montagens concluídas"></progress>${done===missions.length?'<p class="review-celebration">Campus energizado! Agora tente o simulado sem consultar as dicas.</p>':''}<div class="review-actions"><a class="review-action" href="${base}/simulado">Simulado · ${missions.length} questões →</a><a class="review-action" href="${base}/treino">Rever pontos frágeis${p.missed.length?` · ${p.missed.length}`:''} →</a></div><p class="review-caption">Progresso salvo neste navegador. Todas as missões estão disponíveis: siga a ordem ou escolha o assunto de que mais precisa.</p>`),
  );
  const document=root.querySelector('.python-scroll')!;
- document.insertAdjacentHTML('beforeend',`<nav class="review-missions" aria-label="Missões da prova 2">${missions.map((m,i)=>{const count=m.questions.filter(q=>p.solved.includes(q.id)).length,done=count===m.questions.length;return `<a class="review-mission glass ${done?'is-complete':''}" data-glass data-glass-clip href="${base}/missao/${m.id}"><span class="review-mission-number">${done?'✓':String(i+1).padStart(2,'0')}</span>${picture(m.animal)}<strong>${esc(m.title)}</strong><span>${esc(m.subtitle)}</span><small>${count}/${m.questions.length} desafios · ~${m.minutes} min</small><progress value="${count}" max="${m.questions.length}" aria-label="Progresso de ${esc(m.title)}"></progress></a>`;}).join('')}</nav>${card(`${formulaSheet()}${sources()}<details class="review-details"><summary>Recomeçar o progresso</summary><p>Isso apaga apenas o progresso desta revisão neste navegador.</p><button class="review-text-button" type="button" id="review-reset">Apagar progresso da prova 2</button></details>`)}`);
- root.querySelector('#review-reset')!.addEventListener('click',()=>{if(confirm('Apagar o progresso desta revisão da prova 2?')){saveProgress({solved:[],missed:[],seen:[],xp:0});hub(root,readProgress());}});
+ document.insertAdjacentHTML('beforeend',`<nav class="review-missions" aria-label="Missões da prova 2">${missions.map((m,i)=>{const count=m.questions.filter(q=>p.solved.includes(q.id)).length,done=completed(p,m);return `<a class="review-mission glass ${done?'is-complete':''}" data-glass data-glass-clip href="${base}/missao/${m.id}"><span class="review-mission-number">${done?'✓':String(i+1).padStart(2,'0')}</span>${picture(m.animal)}<strong>${esc(m.title)}</strong><span>${esc(m.subtitle)}</span><small>${done?'✓ Montagem concluída':'+100 XP pela montagem'} · ~${m.minutes} min</small><progress value="${done?1:0}" max="1" aria-label="Montagem de ${esc(m.title)}"></progress></a>`;}).join('')}</nav>${card(`${formulaSheet()}${sources()}<details class="review-details"><summary>Recomeçar o progresso</summary><p>Isso apaga apenas o progresso desta revisão neste navegador.</p><button class="review-text-button" type="button" id="review-reset">Apagar progresso da prova 2</button></details>`)}`);
+ root.querySelector('#review-reset')!.addEventListener('click',()=>{if(confirm('Apagar o progresso desta revisão da prova 2?')){saveProgress({solved:[],missed:[],seen:[],xp:0,experiments:[]});hub(root,readProgress());}});
  invalidateScene();return()=>{};
 }
 function shuffle<T>(list:T[]):T[]{const copy=[...list];for(let i=copy.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[copy[i],copy[j]]=[copy[j],copy[i]];}return copy;}
@@ -90,7 +91,7 @@ function installChallenges(root:HTMLElement,host:HTMLElement,p:Progress,question
  const orders=new Map(questions.map(q=>[q.id,shuffle(q.choices?.map((_,i)=>i)??[])]));
  function render():void {
   const q=questions[index];
-  if(!q){host.innerHTML=`<div class="review-finished">${picture(nextMission?.animal??'gato')}<h2>Setor concluído!</h2><p>Você passou pelos desafios desta missão. Volte aos pontos frágeis para tentar sem ajuda.</p><div class="review-actions">${nextMission?`<a class="review-action" href="${base}/missao/${nextMission.id}">Próxima missão →</a>`:''}<a class="review-action" href="${base}">Ver campus →</a><button class="review-text-button" type="button" data-practice-again>Praticar de novo</button></div></div>`;host.querySelector('[data-practice-again]')!.addEventListener('click',()=>{index=0;reset();render();});invalidateScene();return;}
+  if(!q){host.innerHTML=`<div class="review-finished">${picture(nextMission?.animal??'gato')}<h2>Treino concluído!</h2><p>Você passou pelos exercícios. A montagem prática é a atividade que energiza o setor; estes exercícios ajudam a preparar a prova.</p><div class="review-actions">${nextMission?`<a class="review-action" href="${base}/missao/${nextMission.id}">Próxima missão →</a>`:''}<a class="review-action" href="${base}">Ver campus →</a><button class="review-text-button" type="button" data-practice-again>Praticar de novo</button></div></div>`;host.querySelector('[data-practice-again]')!.addEventListener('click',()=>{index=0;reset();render();});invalidateScene();return;}
   host.innerHTML=`<div class="review-question-top"><span>Desafio ${index+1} / ${questions.length}</span><span>${p.solved.includes(q.id)?'✓ Já concluído':'+15 XP · +10 com ajuda'}</span></div>${questionForm(q,orders.get(q.id)!,selected,correct)}<p class="review-validation" role="alert"></p><div class="review-help"><button type="button" class="review-text-button" data-hint ${correct?'hidden':''}>${hinted?'Dica aberta':'Preciso de uma dica'}</button>${hinted&&!correct?'<button type="button" class="review-text-button" data-reveal>Ver a resolução</button>':''}</div>${hinted&&!correct?`<p class="review-hint">${rich(q.hint)}</p>`:''}<div class="review-feedback ${correct?'correct':attempted?'retry':''}" ${correct||attempted||revealed?'':'hidden'} tabindex="-1" role="status"><p><strong>${correct?'✓ Circuito ajustado!':attempted?'Ainda não. Vamos conferir o raciocínio.':'Acompanhe a resolução e tente responder.'}</strong></p>${solution(q)}${!correct?'<p>Você pode corrigir sua resposta acima. Não há perda de pontos.</p>':''}</div>${correct?'<button class="review-primary" type="button" data-next>Próximo desafio →</button>':''}`;
   const form=host.querySelector<HTMLFormElement>('form')!;
   form.addEventListener('submit',event=>{
@@ -114,15 +115,17 @@ function missionView(root:HTMLElement,p:Progress,m:Mission):()=>void {
  if(!p.seen.includes(m.id)){p.seen.push(m.id);saveProgress(p);}
  const index=missions.indexOf(m);
  shell(root,base,'Missões',p,
-  card(`<div class="review-hero-heading">${picture(m.animal)}<div><p class="review-eyebrow">Missão ${index+1} / ${missions.length} · ~${m.minutes} min</p><h1>${title(esc(m.title))}</h1><p>${esc(m.subtitle)}</p></div></div><p class="review-caption">${esc(m.source)}</p><button type="button" class="review-text-button" data-go-challenge>Ir aos desafios ↓</button>`)+
-  card(m.lessons.map((l,i)=>`<article class="review-lesson"><p class="review-eyebrow">Passo ${i+1}</p><h2>${esc(l.title)}</h2>${l.paragraphs.map(p=>`<p>${rich(p)}</p>`).join('')}</article>`).join('')+labMarkup(m),'review-reading')+
-  card('<h2>Coloque em prática</h2><div class="review-challenges"></div>','review-challenge-card')
+  card(`<div class="review-hero-heading">${picture(m.animal)}<div><p class="review-eyebrow">Missão ${index+1} / ${missions.length}</p><h1>${title(esc(m.title))}</h1><p>${esc(m.subtitle)}</p></div></div><p class="review-caption">${esc(m.source)}</p>`)+
+  card(workbenchMarkup(),'review-workbench-card')+
+  card(`<details class="review-support"><summary>Entender as contas e o circuito</summary>${m.lessons.map((l,i)=>`<article class="review-lesson"><p class="review-eyebrow">Passo ${i+1}</p><h2>${esc(l.title)}</h2>${l.paragraphs.map(p=>`<p>${rich(p)}</p>`).join('')}</article>`).join('')}</details>`)+
+  card('<details class="review-support"><summary>Exercícios de prova (opcional)</summary><div class="review-challenges"></div></details>')+
+  card(`<div class="review-actions">${missions[index+1]?`<a class="review-action" href="${base}/missao/${missions[index+1].id}">Próxima missão →</a>`:''}<a class="review-action" href="${base}">Ver campus →</a></div>`)
  );
  const host=root.querySelector<HTMLElement>('.review-challenges')!;
  const first=m.questions.findIndex(q=>!p.solved.includes(q.id));
  const cleanupQuiz=installChallenges(root,host,p,m.questions,Math.max(0,first),missions[index+1]);
- root.querySelector('[data-go-challenge]')!.addEventListener('click',()=>scrollToElement(host));
- const cleanupLab=mountLab(root,m);return()=>{cleanupQuiz();cleanupLab();};
+ const cleanupGame=mountWorkbench(root.querySelector('.hands-on')!,m,()=>{markExperiment(p,m.id);root.querySelector('[data-review-xp]')!.textContent=`${p.xp} XP`;});
+ return()=>{cleanupQuiz();cleanupGame();};
 }
 function practice(root:HTMLElement,p:Progress):()=>void {
  const questions=p.missed.length?allQuestions.filter(q=>p.missed.includes(q.id)):shuffle(missions.map(m=>m.questions[0]));
