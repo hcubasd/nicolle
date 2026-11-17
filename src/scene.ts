@@ -93,6 +93,10 @@ raf=requestAnimationFrame(heartbeat);
 let codeDrag:{id:number;x:number;y:number}|undefined;
 function localInteraction(event:Event):void {
  const target=event.target as Element;
+ // Native disclosure headings are interactive too. The background's default
+ // interactive selector omits summary, so it would capture their mouse press
+ // as a pan and steal the click that should toggle details.
+ if(event.type==='pointerdown'&&target.closest('summary')){event.stopPropagation();return;}
  // The game camera is local. Documents and short setup screens use the
  // official pan; the code block additionally supports horizontal movement.
  const code=target.closest<HTMLElement>('.python-code');

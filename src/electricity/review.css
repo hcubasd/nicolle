@@ -114,3 +114,11 @@
 .wb-control-link{stroke:#111;stroke-width:2;stroke-dasharray:5 4;fill:none;pointer-events:none}.phase-0,.wb-lead.red{stroke:var(--review-wire-0,#9c123e)}.phase-2{stroke:var(--review-wire-1,#254999)}.wb-probe-red{fill:var(--review-wire-0,#9c123e)}
 .wb-hit{fill:transparent;stroke:none;pointer-events:all;cursor:pointer}
 .wb-board>div>svg{max-height:480px}
+
+/* One full-width disclosure target, including whitespace and the chevron. */
+.review-support>summary,.review-details>summary{display:flex;align-items:center;justify-content:space-between;gap:18px;width:100%;min-height:56px;padding:12px 0;cursor:pointer;list-style:none;user-select:none}
+.review-support>summary::-webkit-details-marker,.review-details>summary::-webkit-details-marker{display:none}
+.review-support>summary::marker,.review-details>summary::marker{content:""}
+.review-support>summary::after,.review-details>summary::after{content:"";display:block;flex:0 0 9px;width:9px;height:9px;margin:0 5px 5px 0;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(45deg);pointer-events:none}
+.review-support[open]>summary::after,.review-details[open]>summary::after{transform:rotate(225deg);margin-top:7px;margin-bottom:0}
+.review-support>summary:focus-visible,.review-details>summary:focus-visible{outline:2px solid currentColor;outline-offset:5px;border-radius:4px}
